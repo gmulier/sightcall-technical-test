@@ -1,5 +1,5 @@
 """
-URL configuration for aitutorials project.
+URL configuration for AI Tutorials project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
@@ -15,9 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from tutorials.views import auth_status, logout_view
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("auth/", include('social_django.urls', namespace='social')),
+    path("api/auth/status/", auth_status, name='api_auth_status'),  # API endpoint
+    path("logout/", logout_view, name='logout'),
+    path("", auth_status, name='auth_status'),  # Page d'accueil pour test legacy
 ]
