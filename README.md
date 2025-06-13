@@ -25,7 +25,8 @@ python manage.py runserver
 
 ## 📚 Documentation Complète
 
-👉 **[Guide d'Installation Détaillé](docs/SETUP.md)**
+👉 **[Guide d'Installation Détaillé](docs/SETUP.md)**  
+🏗️ **[Choix d'Architecture](docs/ARCHITECTURE.md)**
 
 ## 🎯 Fonctionnalités
 
@@ -44,6 +45,8 @@ python manage.py runserver
 - **IA :** OpenAI GPT API
 - **Frontend :** React + TypeScript (à venir)
 - **Infrastructure :** Docker Compose
+
+> **Pourquoi ces choix ?** Voir [Choix d'Architecture](docs/ARCHITECTURE.md)
 
 ## 📁 Structure
 

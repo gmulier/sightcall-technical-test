@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "social_django",
     
     # Local apps
-    "apps.tutorials",
+    "tutorials",
 ]
 
 MIDDLEWARE = [
@@ -133,6 +133,9 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Custom User Model
+AUTH_USER_MODEL = "tutorials.User"
 
 # Django REST Framework
 REST_FRAMEWORK = {
