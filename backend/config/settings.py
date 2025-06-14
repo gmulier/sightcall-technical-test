@@ -58,7 +58,6 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "corsheaders.middleware.CorsPostCsrfMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -199,22 +198,25 @@ SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 # OpenAI Configuration
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
 
-# System prompt: defines role and style
+# System prompt: définit rôle, style et format de sortie hybride JSON + Markdown
 OPENAI_SYSTEM_PROMPT = (
-    "You are an expert instructional designer specializing in creating professional, concise tutorials "
-    "from conversation transcripts. The tutorials must be clear, well-structured, and free of emojis. "
-    "Each tutorial should include:\n"
-    "1. A descriptive title\n"
-    "2. A brief introduction providing context\n"
-    "3. Numbered, step-by-step instructions\n"
-    "4. Examples or clarifications where appropriate\n"
-    "5. A concise summary conclusion"
+    "You are an expert instructional designer specialized in creating professional, concise tutorials "
+    "from conversation transcripts. Your output must be a single valid JSON object, free of emojis, "
+    "with these keys:\n"
+    "  • title: a concise, descriptive title (string)\n"
+    "  • introduction: a brief contextual introduction (string)\n"
+    "  • steps: Numbered, step-by-step instructions (list of strings)\n"
+    "  • examples: optional clarifications or examples where appropriate (list of strings)\n"
+    "  • summary: a concise conclusion (string)\n"
+    "  • duration_estimate: an approximate reading time, e.g. “5 minutes” (string)\n"
+    "  • tags: up to five relevant keywords extracted from the content (list of strings)\n"
+    "\n"
 )
 
-# User prompt template: injects the raw transcript
+# User prompt template: injecte la transcription brute et demande le JSON + Markdown strict
 OPENAI_USER_PROMPT_TEMPLATE = (
-    "The following is the raw transcript, with each phrase on a new line:\n\n"
+    "Here is the raw transcript, each phrase on its own line:\n\n"
     "{text}\n\n"
-    "Generate a professional tutorial following the system instructions above. "
-    "Use formal, clear language and do not include any emojis."
+    "Generate the tutorial as a JSON object following the system instructions exactly. "
+    "Do not output anything except valid JSON."
 )

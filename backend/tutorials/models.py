@@ -34,9 +34,15 @@ class Tutorial(models.Model):
     """Tutoriel généré à partir d'une transcription"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     transcript = models.ForeignKey(Transcript, on_delete=models.CASCADE, related_name="tutorials")
-    content = models.TextField()
+    title = models.CharField(max_length=200, default="")
+    introduction = models.TextField(default="")
+    steps = models.JSONField(default=list)
+    examples = models.JSONField(default=list)
+    summary = models.TextField(default="")
+    duration_estimate = models.CharField(max_length=50, default="")
+    tags = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"Tutorial {self.id} - {self.transcript.user.username}"
+        return f"Tutorial: {self.title} - {self.transcript.user.username}"

@@ -19,6 +19,21 @@ export interface Transcript {
   created_at: string;
 }
 
+// Types pour les tutoriels (structure JSON sans content_md)
+export interface Tutorial {
+  id: string;
+  transcript: Transcript;
+  title: string;
+  introduction: string;
+  steps: string[];
+  examples: string[];
+  summary: string;
+  duration_estimate: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
 // Réponse d'authentification de l'API Django
 export interface AuthResponse {
   authenticated: boolean;

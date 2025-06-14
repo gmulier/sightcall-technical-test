@@ -65,13 +65,22 @@ class TranscriptViewSet(viewsets.ModelViewSet):
         transcript = self.get_object()
         
         try:
-            # Génération du tutoriel via OpenAI
-            tutorial_content = generate_tutorial_from_transcript(transcript.phrases)
+            # Extraction du texte des phrases
+            raw_text = "\n".join(p["display"] for p in transcript.phrases if p.get("display"))
             
-            # Sauvegarde en base
+            # Génération du tutoriel via OpenAI
+            data = generate_tutorial_from_transcript(raw_text)
+            
+            # Sauvegarde en base avec mapping direct des clés JSON
             tutorial = Tutorial.objects.create(
                 transcript=transcript,
-                content=tutorial_content
+                title=data['title'],
+                introduction=data['introduction'],
+                steps=data['steps'],
+                examples=data.get('examples', []),
+                summary=data['summary'],
+                duration_estimate=data['duration_estimate'],
+                tags=data['tags'],
             )
             return Response(TutorialSerializer(tutorial).data, status=status.HTTP_201_CREATED)
             

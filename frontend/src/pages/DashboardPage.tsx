@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Block } from 'jsxstyle';
-import { Button, Avatar } from '../components';
-import { User, Transcript } from '../types';
+import { Button, Avatar, TutorialCard, TutorialModal } from '../components';
+import { User, Transcript, Tutorial } from '../types';
+import { formatDate } from '../utils/dateUtils';
 
 interface DashboardPageProps {
   user: User;
@@ -17,13 +18,7 @@ const getCsrfToken = () => {
   return '';
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-};
+
 
 const formatDuration = (ticks: number) => {
   const seconds = Math.floor(ticks / 10000000);
@@ -63,7 +58,11 @@ const GRID_COLUMNS = "minmax(100px, 1fr) minmax(150px, 2fr) minmax(140px, 2fr) m
 export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) => {
   const [message, setMessage] = useState<string>('');
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
+  const [tutorials, setTutorials] = useState<Tutorial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tutorialsLoading, setTutorialsLoading] = useState(true);
+  const [selectedTutorial, setSelectedTutorial] = useState<Tutorial | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchTranscripts = async () => {
     try {
@@ -83,8 +82,27 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
     }
   };
 
+  const fetchTutorials = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/tutorials/', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTutorials(data.sort((a: Tutorial, b: Tutorial) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ));
+      }
+    } catch (error) {
+      console.error('Failed to fetch tutorials:', error);
+    } finally {
+      setTutorialsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTranscripts();
+    fetchTutorials();
   }, []);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,11 +148,51 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
 
       if (response.ok) {
         setMessage('Tutorial generated successfully');
+        fetchTutorials(); // Refresh tutorials list
       } else {
         setMessage('Tutorial generation failed');
       }
     } catch (error) {
       setMessage('Tutorial generation error');
+    }
+  };
+
+  const handleTutorialClick = (tutorialId: string) => {
+    const tutorial = tutorials.find(t => t.id === tutorialId);
+    if (tutorial) {
+      setSelectedTutorial(tutorial);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleTutorialSave = async (tutorial: Tutorial) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/tutorials/${tutorial.id}/`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 
+          'X-CSRFToken': getCsrfToken(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: tutorial.title,
+          introduction: tutorial.introduction,
+          steps: tutorial.steps,
+          examples: tutorial.examples,
+          summary: tutorial.summary,
+          duration_estimate: tutorial.duration_estimate,
+          tags: tutorial.tags
+        })
+      });
+
+      if (response.ok) {
+        setMessage('Tutorial updated successfully');
+        fetchTutorials();
+      } else {
+        setMessage('Tutorial update failed');
+      }
+    } catch (error) {
+      setMessage('Tutorial update error');
     }
   };
 
@@ -254,6 +312,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
         backgroundColor="white"
         borderRadius="12px"
         boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
+        marginBottom="24px"
         overflow="hidden"
       >
         <Block
@@ -367,6 +426,61 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
           </Block>
         )}
       </Block>
+
+      {/* Tutorials Section */}
+      <Block
+        backgroundColor="white"
+        borderRadius="12px"
+        boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
+        marginBottom="24px"
+        overflow="hidden"
+      >
+        <Block
+          padding="20px"
+          borderBottom="1px solid #e1e4e8"
+          fontSize="20px"
+          fontWeight={600}
+          color="#24292e"
+        >
+          📚 Mes Tutoriels ({tutorials.length})
+        </Block>
+
+        {tutorialsLoading ? (
+          <Block padding="40px" textAlign="center" color="#586069">
+            Chargement des tutoriels...
+          </Block>
+        ) : tutorials.length === 0 ? (
+          <Block padding="40px" textAlign="center" color="#586069">
+            Aucun tutoriel généré pour le moment
+          </Block>
+        ) : (
+          <Block 
+            padding="20px"
+            display="grid"
+            gridTemplateColumns="repeat(auto-fit, minmax(280px, 1fr))"
+            gap="16px"
+          >
+            {tutorials.map((tutorial) => (
+              <TutorialCard
+                key={tutorial.id}
+                tutorial={tutorial}
+                onClick={handleTutorialClick}
+              />
+            ))}
+          </Block>
+        )}
+      </Block>
+
+      {/* Tutorial Modal */}
+      <TutorialModal
+        tutorial={selectedTutorial}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedTutorial(null);
+        }}
+        onSave={handleTutorialSave}
+      />
     </Block>
   );
 }; 
