@@ -118,6 +118,26 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
     }
   };
 
+  const handleGenerateTutorial = async (transcriptId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/transcripts/${transcriptId}/generate/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 
+          'X-CSRFToken': getCsrfToken()
+        }
+      });
+
+      if (response.ok) {
+        setMessage('Tutorial generated successfully');
+      } else {
+        setMessage('Tutorial generation failed');
+      }
+    } catch (error) {
+      setMessage('Tutorial generation error');
+    }
+  };
+
   const messageStyle = message ? getMessageStyle(message) : null;
 
   return (
@@ -335,7 +355,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
                       transition="all 0.2s ease"
                       hoverBackgroundColor="#1b1f23"
                       props={{
-                        onClick: () => console.log('Generate tutorial for', transcript.id)
+                        onClick: () => handleGenerateTutorial(transcript.id)
                       }}
                     >
                       Générer ▶

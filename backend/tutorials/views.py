@@ -3,12 +3,14 @@ import hashlib
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib.auth import logout
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
+from openai import OpenAI
 from .models import Transcript, Tutorial
 from .serializers import TranscriptSerializer, TutorialSerializer
+from .openai_client import generate_tutorial_from_transcript
 
 # Create your views here.
 
@@ -61,8 +63,23 @@ class TranscriptViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def generate(self, request, pk=None):
         transcript = self.get_object()
-        tutorial = Tutorial.objects.create(transcript=transcript, content='')
-        return Response(TutorialSerializer(tutorial).data)
+        
+        try:
+            # Génération du tutoriel via OpenAI
+            tutorial_content = generate_tutorial_from_transcript(transcript.phrases)
+            
+            # Sauvegarde en base
+            tutorial = Tutorial.objects.create(
+                transcript=transcript,
+                content=tutorial_content
+            )
+            return Response(TutorialSerializer(tutorial).data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
 
 
 class TutorialViewSet(viewsets.ModelViewSet):

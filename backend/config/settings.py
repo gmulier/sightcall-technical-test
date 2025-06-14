@@ -58,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "corsheaders.middleware.CorsPostCsrfMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -149,7 +150,15 @@ REST_FRAMEWORK = {
 # CORS Configuration simplifiée pour développement
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ['content-type', 'x-csrftoken']
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'x-csrftoken',
+    'accept',
+    'authorization',
+]
+CORS_ALLOW_METHODS = [
+    'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'
+]
 
 # Configuration cookies cross-domain simplifiée  
 SESSION_COOKIE_SAMESITE = None
@@ -186,3 +195,26 @@ SOCIAL_AUTH_PIPELINE = (
 
 # Champs GitHub à récupérer
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
+
+# OpenAI Configuration
+OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+
+# System prompt: defines role and style
+OPENAI_SYSTEM_PROMPT = (
+    "You are an expert instructional designer specializing in creating professional, concise tutorials "
+    "from conversation transcripts. The tutorials must be clear, well-structured, and free of emojis. "
+    "Each tutorial should include:\n"
+    "1. A descriptive title\n"
+    "2. A brief introduction providing context\n"
+    "3. Numbered, step-by-step instructions\n"
+    "4. Examples or clarifications where appropriate\n"
+    "5. A concise summary conclusion"
+)
+
+# User prompt template: injects the raw transcript
+OPENAI_USER_PROMPT_TEMPLATE = (
+    "The following is the raw transcript, with each phrase on a new line:\n\n"
+    "{text}\n\n"
+    "Generate a professional tutorial following the system instructions above. "
+    "Use formal, clear language and do not include any emojis."
+)
