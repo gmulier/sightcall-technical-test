@@ -48,13 +48,14 @@ class TranscriptViewSet(viewsets.ModelViewSet):
         return Transcript.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        raw = request.FILES['file'].read()
+        file = request.FILES['file']
+        raw = file.read()
         data = json.loads(raw)
         fingerprint = hashlib.sha256(raw).hexdigest()
         
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user, fingerprint=fingerprint)
+        serializer.save(user=request.user, filename=file.name, fingerprint=fingerprint)
         return Response(serializer.data, status=201)
 
     @action(detail=True, methods=['post'])

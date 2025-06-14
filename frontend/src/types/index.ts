@@ -8,6 +8,17 @@ export interface User {
   profile_url: string;
 }
 
+// Types pour les transcripts
+export interface Transcript {
+  id: string;
+  user: User;
+  filename: string;
+  timestamp: string;
+  duration_in_ticks: number;
+  phrases: any[];
+  created_at: string;
+}
+
 // Réponse d'authentification de l'API Django
 export interface AuthResponse {
   authenticated: boolean;

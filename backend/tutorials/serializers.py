@@ -16,8 +16,8 @@ class TranscriptSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Transcript
-        fields = ['id', 'user', 'timestamp', 'duration_in_ticks', 'phrases']
-        read_only_fields = ['id', 'user']
+        fields = ['id', 'user', 'filename', 'timestamp', 'duration_in_ticks', 'phrases', 'created_at']
+        read_only_fields = ['id', 'user', 'filename']
 
 
 class TutorialSerializer(serializers.ModelSerializer):

@@ -15,10 +15,13 @@ class Transcript(models.Model):
     """Transcription d'une conversation uploadée par l'utilisateur"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="transcripts")
+    filename = models.CharField(max_length=255)
     timestamp = models.DateTimeField()
     duration_in_ticks = models.BigIntegerField()
     phrases = models.JSONField()
     fingerprint = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
     
     class Meta:
         unique_together = [('user', 'fingerprint')]
