@@ -16,11 +16,17 @@ Including another URLconf
 """
 
 from django.urls import path, include
-from tutorials.views import auth_status, logout_view
+from rest_framework.routers import DefaultRouter
+from tutorials.views import auth_status, logout_view, TranscriptViewSet, TutorialViewSet
+
+router = DefaultRouter()
+router.register(r'transcripts', TranscriptViewSet, basename='transcript')
+router.register(r'tutorials', TutorialViewSet, basename='tutorial')
 
 urlpatterns = [
     path("auth/", include('social_django.urls', namespace='social')),
     path("api/auth/status/", auth_status, name='api_auth_status'),  # API endpoint
     path("logout/", logout_view, name='logout'),
+    path("api/", include(router.urls)),
     path("", auth_status, name='auth_status'),  # Page d'accueil pour test legacy
 ]

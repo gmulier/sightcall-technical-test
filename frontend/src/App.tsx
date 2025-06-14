@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Block } from 'jsxstyle';
 import { Layout } from './components';
-import { LoginPage, DashboardPage, AuthCallback } from './pages';
+import { LoginPage, DashboardPage } from './pages';
 import { useAuth } from './hooks/useAuth';
 
 const AppContent: React.FC = () => {
@@ -35,10 +35,6 @@ const AppContent: React.FC = () => {
   return (
     <Layout>
       <Routes>
-        <Route 
-          path="/auth/callback" 
-          element={<AuthCallback />} 
-        />
         <Route 
           path="/login" 
           element={

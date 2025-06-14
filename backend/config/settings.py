@@ -149,12 +149,14 @@ REST_FRAMEWORK = {
 # CORS Configuration simplifiée pour développement
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = ['content-type', 'x-csrftoken']
 
 # Configuration cookies cross-domain simplifiée  
 SESSION_COOKIE_SAMESITE = None
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SAMESITE = None
 CSRF_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
 
 # GitHub OAuth2 Configuration
 AUTHENTICATION_BACKENDS = [
@@ -166,7 +168,7 @@ SOCIAL_AUTH_GITHUB_KEY = env('SOCIAL_AUTH_GITHUB_KEY', default='')
 SOCIAL_AUTH_GITHUB_SECRET = env('SOCIAL_AUTH_GITHUB_SECRET', default='')
 
 # URLs de redirection
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:3000/auth/callback'  # Route de callback dédiée
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:3000/'  # Redirection directe vers dashboard
 SOCIAL_AUTH_LOGIN_ERROR_URL = 'http://localhost:3000/login'  # Retour simple vers login
 
 # Pipeline minimal avec mapping GitHub

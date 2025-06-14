@@ -18,6 +18,10 @@ class Transcript(models.Model):
     timestamp = models.DateTimeField()
     duration_in_ticks = models.BigIntegerField()
     phrases = models.JSONField()
+    fingerprint = models.CharField(max_length=64, unique=True)
+    
+    class Meta:
+        unique_together = [('user', 'fingerprint')]
     
     def __str__(self):
         return f"Transcript {self.id} - {self.user.username}"
