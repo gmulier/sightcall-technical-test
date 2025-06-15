@@ -1,7 +1,7 @@
 import React from 'react';
 import { Block } from 'jsxstyle';
 import { Tutorial } from '../types';
-import { formatDateTime } from '../utils/dateUtils';
+import { formatDateTime } from '../utils/formatters';
 
 /**
  * Props interface for the TutorialCard component

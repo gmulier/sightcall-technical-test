@@ -30,6 +30,13 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
     }
   }, [tutorial]);
 
+  // Reset editing state when modal opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsEditing(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen || !tutorial || !editedTutorial) return null;
 
   const currentMarkdown = generateMarkdown(editedTutorial);

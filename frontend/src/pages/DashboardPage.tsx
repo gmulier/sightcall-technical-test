@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Block } from 'jsxstyle';
-import { FileText, ClipboardList, BookOpen, Loader2, Play, LogOut } from 'lucide-react';
-import { Button, Avatar, TutorialCard, TutorialModal } from '../components';
-import { User, Transcript, Tutorial } from '../types';
-import { formatDateTime } from '../utils/dateUtils';
+import { FileText, ClipboardList, BookOpen, LogOut } from 'lucide-react';
+import { Button, Avatar, TutorialCard, TutorialModal, Toast, TranscriptRow } from '../components';
+import { User, Tutorial } from '../types';
+import { useToast } from '../hooks/useToast';
+import { useData } from '../hooks/useData';
+import { api } from '../utils/api';
 
 /**
  * Props interface for the DashboardPage component
@@ -71,22 +73,6 @@ const getAverageConfidence = (phrases: any[]) => {
   return confidences.length ? (confidences.reduce((a, b) => a + b, 0) / confidences.length) : 0;
 };
 
-/**
- * Get styling for status messages based on content
- * 
- * @param message - Status message text
- * @returns Object with background color, text color, and icon
- */
-const getMessageStyle = (message: string) => {
-  if (message.includes('success')) {
-    return { bg: '#d4edda', color: '#155724', icon: '✅' };
-  }
-  if (message === 'Transcript already exists') {
-    return { bg: '#fff3cd', color: '#856404', icon: '⚠️' };
-  }
-  return { bg: '#f8d7da', color: '#721c24', icon: '❌' };
-};
-
 // CSS Grid template for transcript table columns
 const GRID_COLUMNS = "minmax(100px, 1fr) minmax(150px, 2fr) minmax(140px, 2fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(120px, 1fr)";
 
@@ -106,87 +92,12 @@ const GRID_COLUMNS = "minmax(100px, 1fr) minmax(150px, 2fr) minmax(140px, 2fr) m
  * - CSRF-protected API calls to Django backend
  */
 export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) => {
-  // Status message state for user feedback
-  const [message, setMessage] = useState<string>('');
+  const { toast, show, hide } = useToast();
+  const { transcripts, tutorials, loading, tutorialsLoading, refetchTranscripts, refetchTutorials } = useData();
   
-  // Transcript data and loading states
-  const [transcripts, setTranscripts] = useState<Transcript[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  // Tutorial data and loading states
-  const [tutorials, setTutorials] = useState<Tutorial[]>([]);
-  const [tutorialsLoading, setTutorialsLoading] = useState(true);
-  
-  // Modal state for tutorial viewing/editing
   const [selectedTutorial, setSelectedTutorial] = useState<Tutorial | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // Loading state for individual tutorial generation (tracks which transcript is being processed)
   const [generatingId, setGeneratingId] = useState<string | null>(null);
-
-  /**
-   * Fetch user's transcripts from the API
-   * 
-   * Retrieves all transcripts belonging to the authenticated user,
-   * sorted by creation date (most recent first).
-   */
-  const fetchTranscripts = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/transcripts/', {
-        credentials: 'include'  // Include session cookies for authentication
-      });
-      if (response.ok) {
-        const data = await response.json();
-        // Sort transcripts by creation date (newest first)
-        setTranscripts(data.sort((a: Transcript, b: Transcript) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        ));
-      }
-    } catch (error) {
-      console.error('Failed to fetch transcripts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Fetch user's tutorials from the API
-   * 
-   * Retrieves all tutorials belonging to the authenticated user,
-   * sorted by last update date (most recent first).
-   */
-  const fetchTutorials = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/tutorials/', {
-        credentials: 'include'  // Include session cookies for authentication
-      });
-      if (response.ok) {
-        const data = await response.json();
-        // Sort tutorials by update date (most recently updated first)
-        setTutorials(data.sort((a: Tutorial, b: Tutorial) => 
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-        ));
-      }
-    } catch (error) {
-      console.error('Failed to fetch tutorials:', error);
-    } finally {
-      setTutorialsLoading(false);
-    }
-  };
-
-  // Load data when component mounts
-  useEffect(() => {
-    fetchTranscripts();
-    fetchTutorials();
-  }, []);
-
-  // Auto-dismiss status messages after 5 seconds
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => setMessage(''), 5000);
-      return () => clearTimeout(timer);  // Cleanup timer on unmount or message change
-    }
-  }, [message]);
 
   /**
    * Handle transcript file upload
@@ -200,32 +111,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Prepare form data for multipart upload
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const response = await fetch('http://localhost:8000/api/transcripts/', {
-        method: 'POST',
-        credentials: 'include',  // Include session cookies
-        headers: { 'X-CSRFToken': getCsrfToken() },  // CSRF protection
-        body: formData
-      });
-
-      if (response.ok) {
-        setMessage('Transcript uploaded successfully');
-        fetchTranscripts();  // Refresh transcript list
-      } else {
-        const errorText = await response.text();
-        // Handle specific error cases
-        if (errorText.includes('duplicate') || errorText.includes('unique') || errorText.includes('already exists')) {
-          setMessage('Transcript already exists');
-        } else {
-          setMessage('Upload failed');
-        }
-      }
+      await api.uploadTranscript(file);
+      show('Transcript uploaded successfully', 'success');
+      refetchTranscripts();
     } catch (error) {
-      setMessage('Upload error');
+      const errorMsg = error instanceof Error ? error.message : 'Upload error';
+      const isDuplicate = errorMsg.includes('duplicate') || errorMsg.includes('unique') || errorMsg.includes('already exists');
+      show(isDuplicate ? 'Transcript already exists' : 'Upload failed', 'error');
     }
   };
 
@@ -238,26 +131,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
    * @param transcriptId - UUID of the transcript to process
    */
   const handleGenerateTutorial = async (transcriptId: string) => {
-    setGeneratingId(transcriptId);  // Show loading state for this specific transcript
+    setGeneratingId(transcriptId);
     try {
-      const response = await fetch(`http://localhost:8000/api/transcripts/${transcriptId}/generate/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 
-          'X-CSRFToken': getCsrfToken()  // CSRF protection
-        }
-      });
-
-      if (response.ok) {
-        setMessage('Tutorial generated successfully');
-        fetchTutorials();  // Refresh tutorials list to show new tutorial
-      } else {
-        setMessage('Tutorial generation failed');
-      }
+      await api.generateTutorial(transcriptId);
+      show('Tutorial generated successfully', 'success');
+      refetchTutorials();
     } catch (error) {
-      setMessage('Tutorial generation error');
+      show('Tutorial generation failed', 'error');
     } finally {
-      setGeneratingId(null);  // Clear loading state
+      setGeneratingId(null);
     }
   };
 
@@ -283,32 +165,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
    */
   const handleTutorialSave = async (tutorial: Tutorial) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/tutorials/${tutorial.id}/`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 
-          'X-CSRFToken': getCsrfToken(),
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: tutorial.title,
-          introduction: tutorial.introduction,
-          steps: tutorial.steps,
-          examples: tutorial.examples,
-          summary: tutorial.summary,
-          duration_estimate: tutorial.duration_estimate,
-          tags: tutorial.tags
-        })
-      });
-
-      if (response.ok) {
-        setMessage('Tutorial updated successfully');
-        fetchTutorials();  // Refresh tutorials list
-      } else {
-        setMessage('Tutorial update failed');
-      }
+      await api.updateTutorial(tutorial);
+      show('Tutorial updated successfully', 'success');
+      refetchTutorials();
     } catch (error) {
-      setMessage('Tutorial update error');
+      show('Tutorial update failed', 'error');
     }
   };
 
@@ -322,27 +183,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
    */
   const handleTutorialDelete = async (tutorialId: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/tutorials/${tutorialId}/`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 
-          'X-CSRFToken': getCsrfToken()
-        }
-      });
-
-      if (response.ok) {
-        setMessage('Tutorial deleted successfully');
-        fetchTutorials();  // Refresh tutorials list
-      } else {
-        setMessage('Tutorial deletion failed');
-      }
+      await api.deleteTutorial(tutorialId);
+      show('Tutorial deleted successfully', 'success');
+      refetchTutorials();
     } catch (error) {
-      setMessage('Tutorial deletion error');
+      show('Tutorial deletion failed', 'error');
     }
   };
-
-  // Get styling for current status message
-  const messageStyle = message ? getMessageStyle(message) : null;
 
   return (
     <Block padding="20px">
@@ -454,20 +301,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
           </Block>
         </Block>
 
-        {/* Status message display */}
-        {messageStyle && (
-          <Block 
-            marginTop="16px"
-            padding="12px"
-            borderRadius="6px"
-            backgroundColor={messageStyle.bg}
-            color={messageStyle.color}
-            fontSize="14px"
-            fontWeight={500}
-          >
-            {messageStyle.icon} {message}
-          </Block>
-        )}
       </Block>
 
       {/* Transcripts List Section */}
@@ -529,98 +362,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
 
               {/* Table Rows */}
               {transcripts.map((transcript) => (
-                <Block
+                <TranscriptRow
                   key={transcript.id}
-                  display="grid"
-                  gridTemplateColumns={GRID_COLUMNS}
-                  gap="16px"
-                  padding="16px 20px"
-                  borderBottom="1px solid #e1e4e8"
-                  fontSize="14px"
-                  alignItems="center"
-                  props={{
-                    style: { ':hover': { backgroundColor: '#f6f8fa' } }
-                  }}
-                >
-                  {/* Upload date */}
-                  <Block color="#586069" textAlign="center">
-                    {formatDateTime(transcript.created_at)}
-                  </Block>
-                  
-                  {/* Filename */}
-                  <Block color="#586069" textAlign="center" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                    {transcript.filename}
-                  </Block>
-                  
-                  {/* Original conversation timestamp */}
-                  <Block color="#586069" textAlign="center">
-                    {new Date(transcript.timestamp).toLocaleDateString('en-US', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </Block>
-                  
-                  {/* Duration */}
-                  <Block color="#586069" textAlign="center">
-                    {formatDuration(transcript.duration_in_ticks)}
-                  </Block>
-                  
-                  {/* Number of phrases */}
-                  <Block color="#586069" textAlign="center">
-                    {transcript.phrases.length}
-                  </Block>
-                  
-                  {/* Detected language */}
-                  <Block color="#586069" textAlign="center">
-                    {getLanguage(transcript.phrases)}
-                  </Block>
-                  
-                  {/* Average confidence score */}
-                  <Block color="#586069" textAlign="center">
-                    {getAverageConfidence(transcript.phrases).toFixed(2)}
-                  </Block>
-                  
-                  {/* Generate tutorial button */}
-                  <Block textAlign="center">
-                    <Block
-                      component="button"
-                      backgroundColor={generatingId === transcript.id ? "#6a737d" : "#24292e"}
-                      color="white"
-                      border="none"
-                      padding="6px 12px"
-                      borderRadius="6px"
-                      fontSize="12px"
-                      fontWeight={600}
-                      cursor={generatingId === transcript.id ? "not-allowed" : "pointer"}
-                      transition="all 0.2s ease"
-                      hoverBackgroundColor={generatingId === transcript.id ? "#6a737d" : "#1b1f23"}
-                      props={{
-                        onClick: () => generatingId === transcript.id ? null : handleGenerateTutorial(transcript.id),
-                        disabled: generatingId === transcript.id
-                      }}
-                    >
-                      <Block display="flex" alignItems="center" gap="4px">
-                        {generatingId === transcript.id ? (
-                          <>
-                            <Loader2 size={14} style={{ 
-                              animation: 'spin 1s linear infinite',
-                              transformOrigin: 'center'
-                            }} />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Play size={14} />
-                            Generate
-                          </>
-                        )}
-                      </Block>
-                    </Block>
-                  </Block>
-                </Block>
+                  transcript={transcript}
+                  isGenerating={generatingId === transcript.id}
+                  onGenerate={handleGenerateTutorial}
+                />
               ))}
             </Block>
           </Block>
@@ -687,6 +434,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
         }}
         onSave={handleTutorialSave}
         onDelete={handleTutorialDelete}
+      />
+
+      {/* Toast notifications */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={hide}
       />
     </Block>
   );
