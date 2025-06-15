@@ -1,148 +1,211 @@
-# 🤖 AI Tutorials MVP
+# AI Tutorials Generator
 
-> Application web MVP pour la génération de tutoriels à partir de transcriptions, avec authentification GitHub OAuth2.
+An intelligent web application that transforms conversation transcripts into structured, professional tutorials using OpenAI's GPT technology.
 
-## 🏗 Architecture
+## Overview
 
-**Frontend/Backend séparés** pour une architecture moderne et scalable :
+AI Tutorials Generator automatically converts raw conversation transcripts (JSON format) into well-structured, step-by-step tutorials. Perfect for creating documentation from meetings, training sessions, or technical discussions.
 
-- **Frontend** : React + TypeScript + JSXStyle (port 3000)
-- **Backend** : Django + DRF + PostgreSQL (port 8000)
-- **Auth** : GitHub OAuth2 avec social-auth-app-django
+## 🚀 Quick Start
 
-## 🚀 Démarrage rapide
+### Prerequisites (to install)
+- Docker and Docker Compose
+- Git
+- GitHub OAuth App for authentication (can be provided by the owner)
+- OpenAI API key (can be provided by the owner)
 
-### 1. Installation automatique
-```bash
-./setup.sh
-```
+### Installation
 
-### 2. Configuration GitHub OAuth2 
-1. Créez une GitHub App sur https://github.com/settings/developers
-2. Configurez les URLs de callback :
-   - Homepage URL: `http://localhost:3000`
-   - Authorization callback URL: `http://localhost:8000/auth/complete/github/`
-3. Ajoutez vos clés dans `.env` :
+1. **Clone the repository**
    ```bash
-   SOCIAL_AUTH_GITHUB_KEY=your_client_id
-   SOCIAL_AUTH_GITHUB_SECRET=your_client_secret
+   git clone https://github.com/gmulier/sightcall-technical-test.git
+   cd sightcall-technical-test
    ```
 
-### 3. Lancement des serveurs
+2. **Configure environment**
+   
+   If the `.env` file is not provided by the owner, you need to create it at the project root using the `.env.example` template and configure it with your own API keys.
+
+3. **Start the application**
+   ```bash
+   ./start.sh
+   ```
+
+4. **Access the application**
+   - Frontend: http://localhost:3000
+
+### Environment Configuration
+
+Edit `.env` with your credentials:
+
+```env
+# GitHub OAuth (create at https://github.com/settings/applications/new)
+SOCIAL_AUTH_GITHUB_KEY=your-github-client-id
+SOCIAL_AUTH_GITHUB_SECRET=your-github-client-secret
+
+# OpenAI API (get from https://platform.openai.com/api-keys)
+OPENAI_API_KEY=sk-proj-your-openai-api-key
+
+# Django Secret (generate a secure random string)
+SECRET_KEY=your-secret-key-here
+```
+
+## Features
+
+### **Authentication**
+- GitHub OAuth2 integration
+- Secure user sessions
+- Personal workspace for each user
+
+### **Transcript Management**
+- Upload JSON transcript files
+- Automatic duplicate detection (SHA-256 fingerprinting)
+- File metadata tracking (duration, phrase count, language)
+- Real-time upload status with user feedback
+
+### **AI-Powered Tutorial Generation**
+- OpenAI GPT-4o-mini integration
+- Intelligent content structuring
+- Automatic generation of:
+  - Descriptive titles
+  - Reading time estimates
+  - Relevant tags/keywords
+  - Contextual introductions
+  - Step-by-step instructions
+  - Practical examples
+  - Concise summaries
+
+### **Tutorial Management**
+- Interactive tutorial viewer with Markdown rendering
+- In-place editing capabilities
+- Export to Markdown format
+- Delete functionality with confirmation
+- Responsive grid layout
+
+### **User Experience**
+- Modern, clean interface
+- Real-time loading states and animations
+- Toast notifications for user feedback
+- Responsive design for all screen sizes
+- Intuitive navigation and interactions
+
+### **Technical Features**
+- Dockerized deployment
+- Automatic database migrations
+- CSRF protection
+- CORS configuration
+- RESTful API architecture with DRF (Django REST Framework)
+- PostgreSQL database with JSON field support
+
+## Architecture
+
+### Backend (Django + DRF)
+- **Framework**: Django 4.2.7 with Django REST Framework
+- **Database**: PostgreSQL with JSON field support
+- **Authentication**: GitHub OAuth2 via social-auth-app-django
+- **AI Integration**: OpenAI Python SDK
+- **API**: RESTful endpoints with CSRF protection
+
+### Frontend (React + TypeScript)
+- **Framework**: React 18 with TypeScript
+- **Styling**: JSXStyle for component-scoped CSS
+- **State Management**: React hooks with custom data fetching
+- **UI Components**: Lucide React icons, ReactMarkdown
+- **Build Tool**: Vite for fast development and building
+
+### Infrastructure
+- **Containerization**: Docker with multi-stage builds
+- **Database**: PostgreSQL 15 with health checks
+- **Reverse Proxy**: Nginx for frontend serving
+- **Process Management**: Gunicorn for Django application
+
+## API Endpoints
+
+### Authentication
+- `GET /api/auth/status/` - Check authentication status
+- `GET /auth/login/github/` - GitHub OAuth login
+- `GET /logout/` - User logout
+
+### Transcripts
+- `GET /api/transcripts/` - List user's transcripts
+- `POST /api/transcripts/` - Upload new transcript
+- `POST /api/transcripts/{id}/generate/` - Generate tutorial from transcript
+
+### Tutorials
+- `GET /api/tutorials/` - List user's tutorials
+- `PATCH /api/tutorials/{id}/` - Update tutorial
+- `DELETE /api/tutorials/{id}/` - Delete tutorial
+
+## 🛠️ Development
+
+### Daily Commands
 ```bash
-# Terminal 1 - Backend Django (port 8000)
-cd backend && python manage.py runserver
+# Start services
+docker-compose up -d
 
-# Terminal 2 - Frontend React (port 3000)  
-cd frontend && npm start
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Stop services
+docker-compose down
+
+# Complete database reset
+./reset-db.sh
 ```
 
-### 4. Accès à l'application
-- **Frontend** : http://localhost:3000 (interface utilisateur)
-- **Backend API** : http://localhost:8000 (API JSON)
-- **Admin Django** : http://localhost:8000/admin/
+### Debugging
+```bash
+# Access backend shell
+docker-compose exec backend bash
 
-## 🛠 Stack Technique
+# Access database
+docker-compose exec db psql -U postgres -d aitutorials
 
-### Frontend
-- **React 18** + **TypeScript** - Framework moderne avec type safety
-- **JSXStyle** - CSS-in-JS performant *(critère obligatoire)*
-- **Custom Hooks** - Gestion d'état réactive (useAuth)
-- **Fetch API** - Communication avec le backend Django
+# Check migrations
+docker-compose exec backend python manage.py showmigrations
+```
 
-### Backend  
-- **Django 4.2** + **Django REST Framework** - API robuste
-- **PostgreSQL** - Base de données relationnelle
-- **social-auth-app-django** - Authentification GitHub OAuth2
-- **python-social-auth** - Pipeline d'authentification personnalisé
-
-## 📁 Structure du projet
+## 📁 Project Structure
 
 ```
-├── frontend/                 # React + TypeScript + JSXStyle
+├── backend/                 # Django application
+│   ├── config/             # Django settings and URLs
+│   ├── tutorials/          # Main app with models, views, serializers
+│   ├── Dockerfile          # Backend container configuration
+│   └── entrypoint.sh       # Automatic migrations script
+├── frontend/               # React application
 │   ├── src/
-│   │   ├── components/      # Composants réutilisables  
-│   │   ├── pages/           # Pages principales (Login, Dashboard)
-│   │   ├── hooks/           # Custom React hooks (useAuth)
-│   │   ├── utils/           # Utilitaires API
-│   │   └── types/           # Types TypeScript
-│   └── package.json         # Dépendances frontend
-├── backend/                 # Django + DRF API
-│   ├── config/              # Configuration Django
-│   ├── tutorials/           # App principale (models, views, API)
-│   └── manage.py           # CLI Django
-├── docs/                   # Documentation
-├── .env                    # Variables d'environnement
-├── docker-compose.yml      # PostgreSQL via Docker
-└── setup.sh               # Installation automatique
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Main application pages
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── utils/          # Utility functions and API client
+│   │   └── types/          # TypeScript type definitions
+│   └── Dockerfile          # Frontend container configuration
+├── docker-compose.yml      # Multi-service orchestration
+├── start.sh               # Quick start script
+├── reset-db.sh            # Database reset utility
+└── .env.example           # Environment template
 ```
 
-## 🎯 Fonctionnalités
+## 🔒 Security Features
 
-### ✅ Implémenté (MVP)
-- [x] Authentification GitHub OAuth2 complète
-- [x] Interface React moderne avec JSXStyle
-- [x] API Django REST Framework
-- [x] Base de données PostgreSQL avec modèles optimisés
-- [x] Architecture frontend/backend séparée
-- [x] Documentation complète
+- **CSRF Protection**: All state-changing requests protected
+- **CORS Configuration**: Restricted to allowed origins
+- **OAuth2 Authentication**: Secure GitHub integration
+- **Input Validation**: Server-side validation for all inputs
+- **SQL Injection Prevention**: Django ORM protection
+- **XSS Protection**: React's built-in escaping
 
-### 🚧 Prochaines étapes
-- [ ] Upload et parsing de transcriptions
-- [ ] Génération de tutoriels avec IA
-- [ ] CRUD complet des transcriptions/tutoriels
-- [ ] Tests automatisés
-- [ ] Déploiement production
+## 🚀 Deployment
 
-## 📖 Documentation
+The application is fully containerized and ready for deployment:
 
-- [📋 Setup détaillé](docs/SETUP.md) - Installation et configuration
-- [🏛 Architecture](docs/ARCHITECTURE.md) - Décisions techniques  
-- [⚛️ Frontend](docs/FRONTEND.md) - React + TypeScript + JSXStyle
+1. **Production Environment**: Update `.env` with production values
+2. **SSL/TLS**: Configure reverse proxy (nginx/traefik) for HTTPS
+3. **Database**: Use managed PostgreSQL service for production
+4. **Scaling**: Horizontal scaling supported via Docker Compose
 
-## 🔧 Développement
+---
 
-### Commandes utiles
-```bash
-# Backend Django
-cd backend
-python manage.py makemigrations    # Créer migrations
-python manage.py migrate           # Appliquer migrations  
-python manage.py createsuperuser   # Créer admin
-python manage.py shell             # Shell Django
-
-# Frontend React
-cd frontend  
-npm start                          # Dev server
-npm run build                      # Build production
-npm test                          # Tests unitaires
-```
-
-### Variables d'environnement
-```bash
-# Base de données
-DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5433/aitutorials
-
-# Django
-SECRET_KEY=your-secret-key
-DEBUG=True
-
-# GitHub OAuth2
-SOCIAL_AUTH_GITHUB_KEY=your_github_client_id  
-SOCIAL_AUTH_GITHUB_SECRET=your_github_client_secret
-
-# CORS (frontend)
-CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-```
-
-## 🎨 Philosophie MVP
-
-- **Minimal mais robuste** - Architecture solide sans complexité inutile
-- **Type safety** - TypeScript côté frontend, Django ORM côté backend  
-- **Composants modulaires** - Code réutilisable et maintenable
-- **API-first** - Backend JSON pur, frontend découplé
-- **Zero redondance** - Chaque ligne de code a un objectif précis
-
-## 📄 Licence
-
-MIT License - Voir [LICENSE](LICENSE) pour plus de détails.
+**Built by Guillaume Mulier using Django, React, OpenAI and Docker**
