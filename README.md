@@ -28,7 +28,7 @@ AI Tutorials Generator automatically converts raw conversation transcripts (JSON
 
 3. **Start the application**
    ```bash
-   ./start.sh
+   ./run start
    ```
 
 4. **Access the application**
@@ -90,8 +90,9 @@ SECRET_KEY=your-secret-key-here
 - Intuitive navigation and interactions
 
 ### **Technical Features**
-- Dockerized deployment
+- Dockerized deployment with intelligent startup
 - Automatic database migrations
+- Pre-flight checks and service readiness detection
 - CSRF protection
 - CORS configuration
 - RESTful API architecture with DRF (Django REST Framework)
@@ -115,7 +116,7 @@ SECRET_KEY=your-secret-key-here
 
 ### Infrastructure
 - **Containerization**: Docker with multi-stage builds
-- **Database**: PostgreSQL 15 with health checks
+- **Database**: PostgreSQL 15 with intelligent startup detection
 - **Reverse Proxy**: Nginx for frontend serving
 - **Process Management**: Gunicorn for Django application
 
@@ -140,18 +141,23 @@ SECRET_KEY=your-secret-key-here
 
 ### Daily Commands
 ```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f backend
-docker-compose logs -f frontend
+# Start the application
+./run start
 
 # Stop services
-docker-compose down
+./run stop
 
-# Complete database reset
-./reset-db.sh
+# Restart services
+./run restart
+
+# Reset database
+./run reset-db
+
+# System diagnosis
+./run diagnose
+
+# Show all commands
+./run help
 ```
 
 ### Debugging
@@ -182,20 +188,34 @@ docker-compose exec backend python manage.py showmigrations
 │   │   ├── utils/          # Utility functions and API client
 │   │   └── types/          # TypeScript type definitions
 │   └── Dockerfile          # Frontend container configuration
+├── scripts/                # Management scripts
+│   ├── common.sh           # Shared functions and utilities
+│   ├── start.sh            # Application startup logic
+│   ├── stop.sh             # Service shutdown
+│   ├── reset-db.sh         # Database reset utility
+│   ├── diagnose.sh         # System diagnostics
+│   └── backend-entrypoint.sh # Backend container entrypoint
 ├── docker-compose.yml      # Multi-service orchestration
-├── start.sh               # Quick start script
-├── reset-db.sh            # Database reset utility
+├── run                     # Main project manager script
 └── .env.example           # Environment template
 ```
 
-## 🔒 Security Features
+## 🔒 Security & Robustness Features
 
+### Security
 - **CSRF Protection**: All state-changing requests protected
 - **CORS Configuration**: Restricted to allowed origins
 - **OAuth2 Authentication**: Secure GitHub integration
 - **Input Validation**: Server-side validation for all inputs
 - **SQL Injection Prevention**: Django ORM protection
 - **XSS Protection**: React's built-in escaping
+
+### Robustness & Reliability
+- **Intelligent Startup**: Pre-flight checks for Docker, ports, and configuration
+- **Service Readiness Detection**: Smart waiting for services to be fully operational
+- **Service Dependencies**: Proper startup order with dependency management
+- **Graceful Error Handling**: Comprehensive error detection and user feedback
+- **Modular Architecture**: Separated concerns with dedicated management scripts
 
 ## 🚀 Deployment
 
