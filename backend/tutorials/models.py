@@ -4,45 +4,192 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    """Utilisateur OAuth2 GitHub minimal"""
-    # Données GitHub OAuth2 supplémentaires
-    github_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
-    avatar_url = models.URLField(blank=True)
-    profile_url = models.URLField(blank=True)
+    """
+    Extended User model for GitHub OAuth2 authentication
+    
+    This model extends Django's built-in User model to store additional
+    GitHub-specific information needed for OAuth2 authentication.
+    """
+    # Additional GitHub OAuth2 data
+    github_id = models.CharField(
+        max_length=100, 
+        unique=True, 
+        blank=True, 
+        null=True,
+        help_text="Unique GitHub user ID from OAuth2"
+    )
+    avatar_url = models.URLField(
+        blank=True,
+        help_text="URL to user's GitHub avatar image"
+    )
+    profile_url = models.URLField(
+        blank=True,
+        help_text="URL to user's GitHub profile page"
+    )
+
+    def __str__(self):
+        return f"User: {self.username} (GitHub ID: {self.github_id})"
 
 
 class Transcript(models.Model):
-    """Transcription d'une conversation uploadée par l'utilisateur"""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="transcripts")
-    filename = models.CharField(max_length=255)
-    timestamp = models.DateTimeField()
-    duration_in_ticks = models.BigIntegerField()
-    phrases = models.JSONField()
-    fingerprint = models.CharField(max_length=64, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
+    """
+    Model representing an uploaded conversation transcript
     
+    Stores the JSON transcript data uploaded by users, including
+    metadata like duration, phrases, and a unique fingerprint
+    to prevent duplicate uploads.
+    """
+    # Primary key as UUID for better security and uniqueness
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        help_text="Unique identifier for this transcript"
+    )
+    
+    # Foreign key to the user who uploaded this transcript
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name="transcripts",
+        help_text="User who uploaded this transcript"
+    )
+    
+    # Original filename of the uploaded JSON file
+    filename = models.CharField(
+        max_length=255,
+        help_text="Original filename of the uploaded transcript"
+    )
+    
+    # Timestamp from the transcript data (when conversation occurred)
+    timestamp = models.DateTimeField(
+        help_text="When the original conversation took place"
+    )
+    
+    # Duration of the conversation in system ticks
+    duration_in_ticks = models.BigIntegerField(
+        help_text="Duration of conversation in system ticks (10,000,000 ticks = 1 second)"
+    )
+    
+    # JSON field containing all conversation phrases/segments
+    phrases = models.JSONField(
+        help_text="Array of conversation phrases with text, timestamps, and metadata"
+    )
+    
+    # SHA-256 hash of transcript content to prevent duplicates
+    fingerprint = models.CharField(
+        max_length=64, 
+        unique=True,
+        help_text="SHA-256 hash of transcript content for duplicate detection"
+    )
+    
+    # When this transcript was uploaded to our system
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this transcript was uploaded"
+    )
+
     class Meta:
+        # Ensure one user can't upload the same transcript twice
         unique_together = [('user', 'fingerprint')]
+        ordering = ['-created_at']  # Most recent first
     
     def __str__(self):
-        return f"Transcript {self.id} - {self.user.username}"
+        return f"Transcript: {self.filename} - {self.user.username}"
+
+    def get_duration_seconds(self):
+        """Convert ticks to seconds for easier display"""
+        return self.duration_in_ticks / 10_000_000
+
+    def get_phrase_count(self):
+        """Get total number of phrases in this transcript"""
+        return len(self.phrases) if self.phrases else 0
 
 
 class Tutorial(models.Model):
-    """Tutoriel généré à partir d'une transcription"""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    transcript = models.ForeignKey(Transcript, on_delete=models.CASCADE, related_name="tutorials")
-    title = models.CharField(max_length=200, default="")
-    introduction = models.TextField(default="")
-    steps = models.JSONField(default=list)
-    examples = models.JSONField(default=list)
-    summary = models.TextField(default="")
-    duration_estimate = models.CharField(max_length=50, default="")
-    tags = models.JSONField(default=list)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    """
+    Model representing an AI-generated tutorial from a transcript
+    
+    Stores structured tutorial data generated by OpenAI from conversation
+    transcripts. Contains both structured fields for data extraction and
+    a markdown field for display.
+    """
+    # Primary key as UUID for consistency with Transcript model
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        help_text="Unique identifier for this tutorial"
+    )
+    
+    # Foreign key to the source transcript
+    transcript = models.ForeignKey(
+        Transcript, 
+        on_delete=models.CASCADE, 
+        related_name="tutorials",
+        help_text="Source transcript this tutorial was generated from"
+    )
+    
+    # Tutorial title generated by AI
+    title = models.CharField(
+        max_length=200, 
+        default="",
+        help_text="AI-generated title for this tutorial"
+    )
+    
+    # Introduction paragraph explaining what the tutorial covers
+    introduction = models.TextField(
+        default="",
+        help_text="AI-generated introduction explaining the tutorial content"
+    )
+    
+    # List of step-by-step instructions
+    steps = models.JSONField(
+        default=list,
+        help_text="Array of step-by-step instructions as strings"
+    )
+    
+    # List of practical examples
+    examples = models.JSONField(
+        default=list,
+        help_text="Array of practical examples as strings"
+    )
+    
+    # Summary paragraph wrapping up the tutorial
+    summary = models.TextField(
+        default="",
+        help_text="AI-generated summary concluding the tutorial"
+    )
+    
+    # Estimated time to complete (e.g., "5 minutes", "1 hour")
+    duration_estimate = models.CharField(
+        max_length=50, 
+        default="",
+        help_text="Estimated time to complete this tutorial"
+    )
+    
+    # List of relevant tags/keywords for categorization
+    tags = models.JSONField(
+        default=list,
+        help_text="Array of relevant tags/keywords for this tutorial"
+    )
+    
+    # When this tutorial was last modified
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When this tutorial was last updated"
+    )
+    
+    class Meta:
+        ordering = ['-updated_at']  # Most recently updated first
     
     def __str__(self):
         return f"Tutorial: {self.title} - {self.transcript.user.username}"
+
+    def get_tag_count(self):
+        """Get number of tags for this tutorial"""
+        return len(self.tags) if self.tags else 0
+
+    def get_step_count(self):
+        """Get number of steps in this tutorial"""
+        return len(self.steps) if self.steps else 0

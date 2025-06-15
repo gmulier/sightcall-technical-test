@@ -3,11 +3,36 @@ import { Block } from 'jsxstyle';
 import { Tutorial } from '../types';
 import { formatDateTime } from '../utils/dateUtils';
 
+/**
+ * Props interface for the TutorialCard component
+ */
 interface TutorialCardProps {
-  tutorial: Tutorial;
-  onClick: (id: string) => void;
+  tutorial: Tutorial;                    // Tutorial data to display
+  onClick: (tutorialId: string) => void; // Callback when card is clicked
 }
 
+/**
+ * TutorialCard Component
+ * 
+ * Displays a tutorial preview in a card format for the tutorials grid.
+ * Shows key information like title, tags, date, and provides click interaction.
+ * 
+ * Features:
+ * - Responsive card layout with flex column structure
+ * - Hover effects with smooth transitions
+ * - Tag display with overflow handling (shows first 3 tags + count)
+ * - Text truncation for long titles
+ * - Consistent spacing and typography
+ * - Click interaction to open tutorial modal
+ * 
+ * Layout Structure:
+ * - Header: Title (truncated if too long)
+ * - Body: Tags with badge styling (flex-grow to fill space)
+ * - Footer: Last updated date (fixed at bottom)
+ * 
+ * @param tutorial - Tutorial object containing all tutorial data
+ * @param onClick - Function called with tutorial ID when card is clicked
+ */
 export const TutorialCard: React.FC<TutorialCardProps> = ({ tutorial, onClick }) => {
   return (
     <Block
@@ -85,9 +110,6 @@ export const TutorialCard: React.FC<TutorialCardProps> = ({ tutorial, onClick })
         marginTop="auto"
         gap="8px"
       >
-        <Block overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap" flex="1">
-          {formatDateTime(tutorial.created_at)}
-        </Block>
         <Block overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap" flex="1" textAlign="right">
           {formatDateTime(tutorial.updated_at)}
         </Block>

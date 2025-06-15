@@ -1,19 +1,41 @@
 import React from 'react';
 import { Block } from 'jsxstyle';
 
+/**
+ * Props interface for the Button component
+ */
 interface ButtonProps {
-  children: React.ReactNode;
-  onClick?: () => void;
-  variant?: 'primary' | 'secondary';
-  disabled?: boolean;
+  children: React.ReactNode;  // Button content (text, icons, etc.)
+  onClick?: () => void;       // Click handler function
+  variant?: 'primary' | 'secondary';  // Visual style variant
+  disabled?: boolean;         // Whether the button is disabled
 }
 
+/**
+ * Button Component
+ * 
+ * A reusable button component with two visual variants:
+ * - primary: Dark background for main actions
+ * - secondary: Light background for secondary actions
+ * 
+ * Features:
+ * - Hover effects with smooth transitions
+ * - Disabled state styling
+ * - Consistent padding and typography
+ * - Accessible cursor states
+ * 
+ * @param children - Content to display inside the button
+ * @param onClick - Function to call when button is clicked
+ * @param variant - Visual style ('primary' or 'secondary')
+ * @param disabled - Whether the button should be disabled
+ */
 export const Button: React.FC<ButtonProps> = ({ 
   children, 
   onClick, 
-  variant = 'primary',
-  disabled = false 
+  variant = 'primary',  // Default to primary variant
+  disabled = false      // Default to enabled
 }) => {
+  // Define styling based on variant and disabled state
   const isPrimary = variant === 'primary';
   
   return (

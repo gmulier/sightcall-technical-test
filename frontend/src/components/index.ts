@@ -1,5 +1,15 @@
-export { Button } from './Button';
-export { Layout } from './Layout';
-export { Avatar } from './Avatar';
-export { TutorialCard } from './TutorialCard';
-export { TutorialModal } from './TutorialModal'; 
+/**
+ * Component exports for the AI Tutorials application
+ * 
+ * This file centralizes all component exports for easy importing
+ * throughout the application.
+ */
+
+// UI Components
+export { Button } from './Button';        // Reusable button component with variants
+export { Layout } from './Layout';        // Main application layout wrapper
+export { Avatar } from './Avatar';        // User avatar display component
+
+// Tutorial-specific Components  
+export { TutorialCard } from './TutorialCard';    // Tutorial preview card for grid display
+export { TutorialModal } from './TutorialModal';  // Modal for viewing/editing tutorials 

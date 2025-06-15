@@ -1,13 +1,26 @@
 import React from 'react';
 import { Block } from 'jsxstyle';
+import { Bot, Github } from 'lucide-react';
 import { Button } from '../components';
 
+/**
+ * Props interface for the LoginPage component
+ */
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: () => void;  // Callback function to initiate GitHub OAuth2 login
 }
 
+/**
+ * LoginPage Component
+ * 
+ * Displays the authentication page with GitHub OAuth2 login.
+ * Features a centered card layout with app branding and login button.
+ * 
+ * @param onLogin - Function to trigger GitHub OAuth2 authentication flow
+ */
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   return (
+    // Full-screen container with centered content
     <Block
       display="flex"
       flexDirection="column"
@@ -16,6 +29,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       minHeight="100vh"
       padding="20px"
     >
+      {/* Main login card */}
       <Block
         backgroundColor="white"
         padding="40px"
@@ -25,14 +39,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         maxWidth="400px"
         width="100%"
       >
+        {/* App icon - Bot representing AI functionality */}
         <Block
-          fontSize="32px"
           marginBottom="8px"
-          props={{ role: 'img', 'aria-label': 'robot' }}
+          display="flex"
+          justifyContent="center"
         >
-          🤖
+          <Bot size={48} color="#0366d6" />
         </Block>
         
+        {/* App title */}
         <Block
           component="h1"
           fontSize="28px"
@@ -44,6 +60,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           AI Tutorials MVP
         </Block>
         
+        {/* App description */}
         <Block
           component="p"
           fontSize="16px"
@@ -51,17 +68,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           marginBottom="32px"
           margin="0 0 32px 0"
         >
-          Connectez-vous avec GitHub pour accéder à l'application
+          Connect with GitHub to access the application
         </Block>
         
+        {/* GitHub OAuth2 login button */}
         <Button onClick={onLogin}>
-          <Block
-            fontSize="18px"
-            props={{ role: 'img', 'aria-label': 'github' }}
-          >
-            🐙
+          <Block display="flex" alignItems="center" gap="8px">
+            <Github size={20} />
+            Connect with GitHub
           </Block>
-          Se connecter avec GitHub
         </Button>
       </Block>
     </Block>

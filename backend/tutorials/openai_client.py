@@ -1,14 +1,33 @@
-import json
 from openai import OpenAI
+import json
 from django.conf import settings
 
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 def generate_tutorial_from_transcript(text: str) -> dict:
     """
-    Génère un tutoriel structuré à partir du texte d'un transcript.
-    Retourne un dictionnaire avec les clés : title, introduction, steps, examples, summary, duration_estimate, tags, content_md
+    Generate structured tutorial content from transcript text using OpenAI
+    
+    Takes raw transcript text and uses OpenAI's GPT model to generate
+    a comprehensive tutorial with structured sections and markdown content.
+    
+    Args:
+        transcript_text (str): Raw text extracted from conversation transcript
+        
+    Returns:
+        dict: Structured tutorial data with the following keys:
+            - title: Tutorial title
+            - introduction: Introduction paragraph
+            - steps: List of step-by-step instructions
+            - examples: List of practical examples
+            - summary: Summary paragraph
+            - duration_estimate: Estimated completion time
+            - tags: List of relevant keywords
+            
+    Raises:
+        Exception: If OpenAI API call fails or returns invalid data
     """
+    client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[

@@ -68,7 +68,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],  # Plus de templates HTML, seulement API JSON
+        "DIRS": [],  # No HTML templates needed, JSON API only
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -88,7 +88,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    "default": env.db(),  # lit DATABASE_URL depuis .env
+    "default": env.db(),  # Reads DATABASE_URL from .env file
 }
 
 
@@ -146,7 +146,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS Configuration simplifiée pour développement
+# CORS Configuration for development
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -159,7 +159,7 @@ CORS_ALLOW_METHODS = [
     'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'
 ]
 
-# Configuration cookies cross-domain simplifiée  
+# Cross-domain cookie configuration  
 SESSION_COOKIE_SAMESITE = None
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SAMESITE = None
@@ -175,11 +175,11 @@ AUTHENTICATION_BACKENDS = [
 SOCIAL_AUTH_GITHUB_KEY = env('SOCIAL_AUTH_GITHUB_KEY', default='')
 SOCIAL_AUTH_GITHUB_SECRET = env('SOCIAL_AUTH_GITHUB_SECRET', default='')
 
-# URLs de redirection
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:3000/'  # Redirection directe vers dashboard
-SOCIAL_AUTH_LOGIN_ERROR_URL = 'http://localhost:3000/login'  # Retour simple vers login
+# Redirect URLs
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:3000/'  # Direct redirect to dashboard
+SOCIAL_AUTH_LOGIN_ERROR_URL = 'http://localhost:3000/login'  # Return to login on error
 
-# Pipeline minimal avec mapping GitHub
+# Minimal pipeline with GitHub mapping
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
@@ -187,18 +187,18 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
-    'tutorials.pipeline.save_github_profile',  # Notre pipeline custom
+    'tutorials.pipeline.save_github_profile',  # Our custom pipeline
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
 )
 
-# Champs GitHub à récupérer
+# GitHub fields to retrieve
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 
 # OpenAI Configuration
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
 
-# System prompt: définit rôle, style et format de sortie hybride JSON + Markdown
+# System prompt: defines role, style and hybrid JSON + Markdown output format
 OPENAI_SYSTEM_PROMPT = (
     "You are an expert instructional designer specialized in creating professional, concise tutorials "
     "from conversation transcripts. Your output must be a single valid JSON object, free of emojis, "
@@ -213,7 +213,7 @@ OPENAI_SYSTEM_PROMPT = (
     "\n"
 )
 
-# User prompt template: injecte la transcription brute et demande le JSON + Markdown strict
+# User prompt template: injects raw transcript and requests strict JSON + Markdown
 OPENAI_USER_PROMPT_TEMPLATE = (
     "Here is the raw transcript, each phrase on its own line:\n\n"
     "{text}\n\n"
