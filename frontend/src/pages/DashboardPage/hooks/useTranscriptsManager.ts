@@ -1,26 +1,28 @@
 import { useState, useCallback } from 'react';
 import { api } from '../../../utils/api';
-import { useToast } from '../../../hooks/useToast';
 import { useData } from '../../../hooks/useData';
 import { TranscriptsManager } from '../types';
 
-export const useTranscriptsManager = (): TranscriptsManager & { refetchTranscripts: () => void } => {
-  const { transcripts, loading, refetchTranscripts, refetchTutorials } = useData();
+export const useTranscriptsManager = (
+  onTutorialGenerated?: () => void,
+  showToast?: (message: string, type: 'success' | 'error') => void
+): TranscriptsManager & { refetchTranscripts: () => void } => {
+  const { transcripts, loading, refetchTranscripts } = useData();
   const [generatingId, setGeneratingId] = useState<string | null>(null);
-  const { show } = useToast();
 
   const generate = useCallback(async (transcriptId: string) => {
     setGeneratingId(transcriptId);
     try {
       await api.generateTutorial(transcriptId);
-      show('Tutorial generated successfully', 'success');
-      refetchTutorials();
+      showToast?.('Tutorial generated successfully', 'success');
+      // Appeler le callback pour rafraîchir les tutoriels
+      onTutorialGenerated?.();
     } catch (error) {
-      show('Tutorial generation failed', 'error');
+      showToast?.('Tutorial generation failed', 'error');
     } finally {
       setGeneratingId(null);
     }
-  }, [show, refetchTutorials]);
+  }, [showToast, onTutorialGenerated]);
 
   return {
     transcripts,

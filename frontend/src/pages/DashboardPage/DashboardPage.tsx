@@ -20,12 +20,12 @@ import { DashboardPageProps } from './types';
  * - Optimized with useCallback for performance
  */
 export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) => {
-  const { toast, hide } = useToast();
+  const { toast, show, hide } = useToast();
   
-  // Business logic hooks
-  const { transcripts, loading: transcriptsLoading, generatingId, generate, refetchTranscripts } = useTranscriptsManager();
-  const { tutorials, loading: tutorialsLoading, selected, setSelected, save, remove } = useTutorialsManager();
-  const { upload, isUploading } = useUploadManager(refetchTranscripts);
+  // Business logic hooks  
+  const { tutorials, loading: tutorialsLoading, selected, setSelected, save, remove, refetchTutorials } = useTutorialsManager(show);
+  const { transcripts, loading: transcriptsLoading, generatingId, generate, refetchTranscripts } = useTranscriptsManager(refetchTutorials, show);
+  const { upload, isUploading } = useUploadManager(refetchTranscripts, show);
 
   // Handle tutorial selection with useCallback for performance
   const handleTutorialSelect = useCallback((tutorialId: string) => {

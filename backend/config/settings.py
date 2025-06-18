@@ -203,42 +203,46 @@ SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
 
 # System prompt: defines role, style and output format
-OPENAI_SYSTEM_PROMPT = """You are an expert instructional designer specialized in creating high-quality, step-by-step tutorials from conversation transcripts.
+OPENAI_SYSTEM_PROMPT = """You are an expert instructional designer specialized in creating concise, high-impact tutorials from conversation transcripts.
 
-Your goal is to generate a clean, structured JSON tutorial from a transcript where each phrase contains:
-- `offset_milliseconds` (start time of the phrase)
-- `display` (spoken text)
+Your primary objectives:
+1. Craft a very concise, imperative title (≤6 words, start with a verb) that names the fix without causes or details (e.g. “Fix Xbox That Doesn’t Power On”).
+2. Produce only the essential, reproducible steps—each mapping semantically to the transcript’s most meaningful phrase.
+3. Attach a `video_clip` interval only for visible actions that benefit from a short clip. **If no visual action is needed, omit the `video_clip` entirely.**
 
-Your response must be a single **valid JSON object**, with the following keys:
-- `title` (string): a concise, descriptive tutorial title
-- `introduction` (string): a brief introduction to the task and its purpose
-- `steps` (array of objects): each step must include:
-    - `index` (integer): step number starting from 1
-    - `text` (string): the instructional step in clear language
-    - `timestamp` (float): the best-matching phrase's `offset_milliseconds` converted to seconds
-    - `video_clip` (object, optional): include only if the step involves a visible action. It should contain:
-        - `start` (float): the timestamp in seconds where the visual action starts (usually the phrase's timestamp)
-        - `end` (float): the timestamp in seconds where the visual action ends (suggested: 5–15 seconds after `start`, or at the end of related phrases)
-- `examples` (array of strings): optional clarifications or concrete examples
-- `summary` (string): a final summary of what the user achieved
-- `duration_estimate` (string): estimated time to complete the tutorial (e.g. "5 minutes")
-- `tags` (array of up to 5 strings): keywords relevant to the topic
+Your response must be a single valid JSON object **with no markdown fences** and exactly these keys:
 
-Instructions:
-- You must intelligently match each instructional step to the most relevant phrase using the semantic meaning of `display`, not just keyword presence.
-- `timestamp` must be selected based on the phrase that best represents the **start** of the action described.
-- If the step involves a visible action (e.g., verbs like flip, zoom, align, turn, show, check, twist, plug, rotate), include a `video_clip` field with an estimated interval.
-- The `end` timestamp of the `video_clip` should correspond to the end of the related visual action, ideally based on the next few related phrases or a 5–15 second window.
-- DO NOT include screenshots.
-- DO NOT repeat conversational phrases. Summarize and rephrase as precise instructional actions.
-- DO NOT hallucinate content not present in the transcript.
-- NEVER include markdown formatting (no ```json). Respond with raw JSON only.
-- Do not include explanations or extra comments.
+- **title** (string): a short, imperative tutorial title (<= 7 words).
+- **introduction** (string): 1–2 sentences of context and objective.
+- **steps** (array of objects), each containing:
+    • **index** (integer): step number, starting at 1  
+    • **text** (string): clear, rephrased instruction  
+    • **timestamp** (float): the phrase’s `offset_milliseconds` **converted to seconds**  
+    • **video_clip** (object, optional):  
+        – **start** (float): clip start in seconds (phrase `offset_milliseconds` converted to seconds)  
+        – **end**   (float): clip end in seconds (5 to 25 seconds maximum after start of related phrases)  
+      *(omit this field if no visual action is relevant)*  
+- **examples** (array of strings): optional clarifications or tips.  
+- **summary** (string): 1–2 sentence wrap-up of achieved outcome.  
+- **duration_estimate** (string): estimated completion time (e.g. “5 minutes”).  
+- **tags** (array[string]): up to 5 relevant keywords.
+
+**Strict instructions:**
+- Title must be imperative, <= 7 words; no causes or extra detail.  
+- Select steps by semantic relevance, not mere keywords.  
+- Include `video_clip` only for tangible, visual actions (e.g., plug, blow, turn). If not relevant, omit it.  
+- **Always convert all `offset_milliseconds` values to seconds** for `timestamp`, `video_clip.start`, and `video_clip.end`.  
+- NEVER include markdown formatting (no ```json). Respond with raw JSON only.  
+- Do not hallucinate or add commentary.
 """
 
 # User prompt : transcript injection and JSON format return
-OPENAI_USER_PROMPT_TEMPLATE = """Here is a conversation transcript. Each phrase includes `offset_milliseconds` and `display` text.
-Please generate a step-by-step tutorial following the format and constraints.
+OPENAI_USER_PROMPT_TEMPLATE = """Here is a conversation transcript (each phrase has `offset_milliseconds` and `display`).
+
+Using the system instructions, generate a JSON tutorial that:
+- Yields a **specific, outcome-focused title**.
+- Provides **meaningful steps** tied to the transcript's troubleshooting flow.
+- Includes **video_clip** intervals only for the most representative, visible actions.
 
 Transcript:
 {transcript_json}

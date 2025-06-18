@@ -1,14 +1,14 @@
 import { useState, useCallback } from 'react';
 import { api } from '../../../utils/api';
-import { useToast } from '../../../hooks/useToast';
 import { useData } from '../../../hooks/useData';
 import { Tutorial } from '../../../types';
 import { TutorialsManager } from '../types';
 
-export const useTutorialsManager = (): TutorialsManager => {
+export const useTutorialsManager = (
+  showToast?: (message: string, type: 'success' | 'error') => void
+): TutorialsManager & { refetchTutorials: () => void } => {
   const { tutorials, tutorialsLoading: loading, refetchTutorials } = useData();
   const [selected, setSelectedInternal] = useState<Tutorial | null>(null);
-  const { show } = useToast();
 
   const setSelected = useCallback((tutorial: Tutorial | null) => {
     setSelectedInternal(tutorial);
@@ -17,22 +17,22 @@ export const useTutorialsManager = (): TutorialsManager => {
   const save = useCallback(async (tutorial: Tutorial) => {
     try {
       await api.updateTutorial(tutorial);
-      show('Tutorial updated successfully', 'success');
+      showToast?.('Tutorial updated successfully', 'success');
       refetchTutorials();
     } catch (error) {
-      show('Tutorial update failed', 'error');
+      showToast?.('Tutorial update failed', 'error');
     }
-  }, [show, refetchTutorials]);
+  }, [showToast, refetchTutorials]);
 
   const remove = useCallback(async (tutorialId: string) => {
     try {
       await api.deleteTutorial(tutorialId);
-      show('Tutorial deleted successfully', 'success');
+      showToast?.('Tutorial deleted successfully', 'success');
       refetchTutorials();
     } catch (error) {
-      show('Tutorial deletion failed', 'error');
+      showToast?.('Tutorial deletion failed', 'error');
     }
-  }, [show, refetchTutorials]);
+  }, [showToast, refetchTutorials]);
 
   return {
     tutorials,
@@ -40,6 +40,7 @@ export const useTutorialsManager = (): TutorialsManager => {
     selected,
     setSelected,
     save,
-    remove
+    remove,
+    refetchTutorials
   };
 }; 

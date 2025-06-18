@@ -1,18 +1,18 @@
 import json
-import hashlib
-import os
+import logging
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib.auth import logout
-from django.conf import settings
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
+from rest_framework.serializers import ValidationError
 from .models import Transcript, Tutorial
 from .serializers import TranscriptSerializer, TutorialSerializer
-from .openai_client import generate_tutorial_from_transcript
-from moviepy import VideoFileClip
+from .services import TranscriptService, TutorialService
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -63,27 +63,24 @@ class TranscriptViewSet(viewsets.ModelViewSet):
         video_file = request.FILES.get('video_file')
         
         try:
-            # Parse JSON and create fingerprint for duplicate detection
-            raw = json_file.read()
-            data = json.loads(raw)
-            fingerprint = hashlib.sha256(raw).hexdigest()
-            
-            serializer = self.get_serializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            
-            transcript = serializer.save(
-                user=request.user, 
-                filename=json_file.name, 
-                fingerprint=fingerprint,
+            transcript = TranscriptService.create_from_file(
+                user=request.user,
+                json_file=json_file,
                 video_file=video_file
             )
+            
+            serializer = self.get_serializer(transcript)
+            logger.info(f"Transcript {transcript.id} uploaded by user {request.user.id}")
             
             return Response(serializer.data, status=201)
             
         except json.JSONDecodeError:
             return Response({"detail": "Invalid JSON format"}, status=400)
+        except ValidationError as e:
+            return Response({"detail": str(e)}, status=400)
         except Exception as e:
-            return Response({"detail": f"Upload error: {str(e)}"}, status=500)
+            logger.error(f"Transcript upload failed for user {request.user.id}: {e}")
+            return Response({"detail": "Upload failed"}, status=500)
 
     @action(detail=True, methods=['post'])
     def generate(self, request, pk=None):
@@ -91,61 +88,16 @@ class TranscriptViewSet(viewsets.ModelViewSet):
         transcript = self.get_object()
         
         try:
-            # Generate tutorial structure with OpenAI
-            tutorial_data = generate_tutorial_from_transcript(transcript.phrases)
+            tutorial = TutorialService.create_from_transcript(transcript)
+            serializer = TutorialSerializer(tutorial)
             
-            tutorial = Tutorial.objects.create(
-                transcript=transcript,
-                title=tutorial_data['title'],
-                introduction=tutorial_data['introduction'],
-                steps=tutorial_data['steps'],
-                examples=tutorial_data.get('examples', []),
-                summary=tutorial_data['summary'],
-                duration_estimate=tutorial_data['duration_estimate'],
-                tags=tutorial_data['tags'],
-            )
-            
-            # Extract video clips if video is available
-            if transcript.video_file:
-                self._extract_video_clips(tutorial, transcript)
-            
-            return Response(TutorialSerializer(tutorial).data, status=201)
+            logger.info(f"Tutorial {tutorial.id} generated for transcript {transcript.id}")
+            return Response(serializer.data, status=201)
             
         except Exception as e:
-            return Response({"detail": f"Generation failed: {str(e)}"}, status=502)
-    
-    def _extract_video_clips(self, tutorial, transcript):
-        """Extract video clips organized by transcript/tutorial structure."""
-        # Structure hiérarchique: media/tutorials/{transcript_id}/{tutorial_id}/clips/
-        clips_dir = os.path.join(settings.MEDIA_ROOT, 'tutorials', str(transcript.id), str(tutorial.id), 'clips')
-        os.makedirs(clips_dir, exist_ok=True)
-        
-        updated_steps = []
-        
-        for step in tutorial.steps:
-            step = step.copy()  # Copie pour éviter les mutations
-            
-            if video_clip := step.get('video_clip'):
-                start, end = video_clip['start'], video_clip['end']
-                # Nom descriptif avec timing
-                filename = f"step_{step['index']:02d}_{start:.1f}s-{end:.1f}s.mp4"
-                filepath = os.path.join(clips_dir, filename)
-                
-                try:
-                    # Extract video segment using MoviePy
-                    clip = VideoFileClip(transcript.video_file.path).subclipped(start, end)
-                    clip.write_videofile(filepath, audio_codec='aac') # Force audio codec
-                    clip.close()
-                    
-                    # URL avec nouvelle structure
-                    step['video_clip']['file_url'] = f"/media/tutorials/{transcript.id}/{tutorial.id}/clips/{filename}"
-                except:
-                    pass
-            
-            updated_steps.append(step)
-        
-        tutorial.steps = updated_steps
-        tutorial.save()
+            logger.error(f"Tutorial generation failed for transcript {transcript.id}: {e}")
+            return Response({"detail": "Generation failed"}, status=502)
+
 
 
 class TutorialViewSet(viewsets.ModelViewSet):
