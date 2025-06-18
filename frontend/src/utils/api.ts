@@ -1,17 +1,8 @@
 import { AuthResponse, Transcript, Tutorial } from '../types';
+import { getCsrfToken } from './csrf';
 
 // Configuration de base de l'API
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
-// Get CSRF token from cookies
-const getCsrfToken = () => {
-  const cookies = document.cookie.split(';');
-  for (let cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'csrftoken') return value;
-  }
-  return '';
-};
 
 // Base fetch with common options
 const apiFetch = async (endpoint: string, options: RequestInit = {}) => {

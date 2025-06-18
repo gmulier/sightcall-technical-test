@@ -1,6 +1,5 @@
 import json
 import hashlib
-import uuid
 import os
 from django.shortcuts import redirect
 from django.http import JsonResponse
@@ -57,17 +56,11 @@ class TranscriptViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Upload JSON transcript file with optional video file."""
-        print(f"=== TRANSCRIPT UPLOAD DEBUG ===")
-        print(f"Files received: {list(request.FILES.keys())}")
-        
         if 'file' not in request.FILES:
             return Response({"detail": "JSON transcript file is required"}, status=400)
         
         json_file = request.FILES['file']
         video_file = request.FILES.get('video_file')
-        
-        print(f"JSON file: {json_file.name}, size: {json_file.size}")
-        print(f"Video file: {video_file.name if video_file else 'None'}, size: {video_file.size if video_file else 'None'}")
         
         try:
             # Parse JSON and create fingerprint for duplicate detection
@@ -75,13 +68,8 @@ class TranscriptViewSet(viewsets.ModelViewSet):
             data = json.loads(raw)
             fingerprint = hashlib.sha256(raw).hexdigest()
             
-            print(f"JSON parsed successfully, fingerprint: {fingerprint[:8]}...")
-            
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
-            
-            print(f"Serializer validation passed")
-            print(f"About to save transcript with video_file: {video_file}")
             
             transcript = serializer.save(
                 user=request.user, 
@@ -90,19 +78,11 @@ class TranscriptViewSet(viewsets.ModelViewSet):
                 video_file=video_file
             )
             
-            print(f"✅ Transcript saved successfully: {transcript.id}")
-            print(f"Video file path: {transcript.video_file.path if transcript.video_file else 'None'}")
-            print(f"Has video: {transcript.has_video()}")
-            
             return Response(serializer.data, status=201)
             
         except json.JSONDecodeError:
-            print(f"❌ JSON decode error")
             return Response({"detail": "Invalid JSON format"}, status=400)
         except Exception as e:
-            print(f"❌ Upload error: {type(e)} - {str(e)}")
-            import traceback
-            traceback.print_exc()
             return Response({"detail": f"Upload error: {str(e)}"}, status=500)
 
     @action(detail=True, methods=['post'])

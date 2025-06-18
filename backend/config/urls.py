@@ -33,6 +33,6 @@ urlpatterns = [
     path("", auth_status, name='auth_status'),  # Page d'accueil pour test legacy
 ]
 
-# No longer need static files serving - everything is in database!
+# Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

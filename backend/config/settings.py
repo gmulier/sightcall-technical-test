@@ -16,8 +16,6 @@ import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-# Backend directory for database
-BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 # Environment variables
 env = environ.Env()
