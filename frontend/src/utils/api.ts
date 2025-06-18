@@ -77,9 +77,15 @@ export const api = {
     return response.json();
   },
 
-  async uploadTranscript(file: File): Promise<void> {
+  async uploadTranscript(file: File, videoFile?: File): Promise<void> {
     const formData = new FormData();
     formData.append('file', file);
+    
+    // Add video file if provided
+    if (videoFile) {
+      formData.append('video_file', videoFile);
+    }
+    
     await apiFetch('/api/transcripts/', {
       method: 'POST',
       body: formData,

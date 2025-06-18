@@ -16,6 +16,8 @@ import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# Backend directory for database
+BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 # Environment variables
 env = environ.Env()
@@ -128,6 +130,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Media files (uploaded files)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -198,25 +204,44 @@ SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 # OpenAI Configuration
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
 
-# System prompt: defines role, style and hybrid JSON + Markdown output format
-OPENAI_SYSTEM_PROMPT = (
-    "You are an expert instructional designer specialized in creating professional, concise tutorials "
-    "from conversation transcripts. Your output must be a single valid JSON object, free of emojis, "
-    "with these keys:\n"
-    "  • title: a concise, descriptive title (string)\n"
-    "  • introduction: a brief contextual introduction (string)\n"
-    "  • steps: Numbered, step-by-step instructions (list of strings)\n"
-    "  • examples: optional clarifications or examples where appropriate (list of strings)\n"
-    "  • summary: a concise conclusion (string)\n"
-    "  • duration_estimate: an approximate reading time, e.g. “5 minutes” (string)\n"
-    "  • tags: up to five relevant keywords extracted from the content (list of strings)\n"
-    "\n"
-)
+# System prompt: defines role, style and output format
+OPENAI_SYSTEM_PROMPT = """You are an expert instructional designer specialized in creating high-quality, step-by-step tutorials from conversation transcripts.
 
-# User prompt template: injects raw transcript and requests strict JSON + Markdown
-OPENAI_USER_PROMPT_TEMPLATE = (
-    "Here is the raw transcript, each phrase on its own line:\n\n"
-    "{text}\n\n"
-    "Generate the tutorial as a JSON object following the system instructions exactly. "
-    "Do not output anything except valid JSON."
-)
+Your goal is to generate a clean, structured JSON tutorial from a transcript where each phrase contains:
+- `offset_milliseconds` (start time of the phrase)
+- `display` (spoken text)
+
+Your response must be a single **valid JSON object**, with the following keys:
+- `title` (string): a concise, descriptive tutorial title
+- `introduction` (string): a brief introduction to the task and its purpose
+- `steps` (array of objects): each step must include:
+    - `index` (integer): step number starting from 1
+    - `text` (string): the instructional step in clear language
+    - `timestamp` (float): the best-matching phrase's `offset_milliseconds` converted to seconds
+    - `video_clip` (object, optional): include only if the step involves a visible action. It should contain:
+        - `start` (float): the timestamp in seconds where the visual action starts (usually the phrase's timestamp)
+        - `end` (float): the timestamp in seconds where the visual action ends (suggested: 5–15 seconds after `start`, or at the end of related phrases)
+- `examples` (array of strings): optional clarifications or concrete examples
+- `summary` (string): a final summary of what the user achieved
+- `duration_estimate` (string): estimated time to complete the tutorial (e.g. "5 minutes")
+- `tags` (array of up to 5 strings): keywords relevant to the topic
+
+Instructions:
+- You must intelligently match each instructional step to the most relevant phrase using the semantic meaning of `display`, not just keyword presence.
+- `timestamp` must be selected based on the phrase that best represents the **start** of the action described.
+- If the step involves a visible action (e.g., verbs like flip, zoom, align, turn, show, check, twist, plug, rotate), include a `video_clip` field with an estimated interval.
+- The `end` timestamp of the `video_clip` should correspond to the end of the related visual action, ideally based on the next few related phrases or a 5–15 second window.
+- DO NOT include screenshots.
+- DO NOT repeat conversational phrases. Summarize and rephrase as precise instructional actions.
+- DO NOT hallucinate content not present in the transcript.
+- NEVER include markdown formatting (no ```json). Respond with raw JSON only.
+- Do not include explanations or extra comments.
+"""
+
+# User prompt : transcript injection and JSON format return
+OPENAI_USER_PROMPT_TEMPLATE = """Here is a conversation transcript. Each phrase includes `offset_milliseconds` and `display` text.
+Please generate a step-by-step tutorial following the format and constraints.
+
+Transcript:
+{transcript_json}
+"""

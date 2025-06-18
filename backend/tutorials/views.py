@@ -1,8 +1,11 @@
 import json
 import hashlib
+import uuid
+import os
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib.auth import logout
+from django.conf import settings
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,11 +13,12 @@ from rest_framework.parsers import MultiPartParser
 from .models import Transcript, Tutorial
 from .serializers import TranscriptSerializer, TutorialSerializer
 from .openai_client import generate_tutorial_from_transcript
+from moviepy import VideoFileClip
 
-# Create your views here.
+
 
 def auth_status(request):
-    """Check authentication status and return user info if authenticated."""
+    """Check if user is authenticated and return their profile data."""
     if request.user.is_authenticated:
         return JsonResponse({
             'authenticated': True,
@@ -27,103 +31,148 @@ def auth_status(request):
                 'profile_url': request.user.profile_url,
             }
         })
-    else:
-        return JsonResponse({
-            'authenticated': False,
-            'login_url': '/auth/login/github/'
-        })
+    return JsonResponse({'authenticated': False, 'login_url': '/auth/login/github/'})
 
 
 def logout_view(request):
-    """Log out the user and redirect to the React frontend at localhost:3000."""
+    """Logout user and redirect to React frontend."""
     logout(request)
     return redirect('http://localhost:3000')
 
 
 class TranscriptViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for managing conversation transcripts
-    
-    Provides CRUD operations for transcripts with the following endpoints:
-    - GET /api/transcripts/ - List all user's transcripts
-    - POST /api/transcripts/ - Upload a new transcript
-    - GET /api/transcripts/{id}/ - Get specific transcript
+    API endpoints for transcript management:
+    - GET /api/transcripts/ - List user's transcripts
+    - POST /api/transcripts/ - Upload transcript with optional video
     - POST /api/transcripts/{id}/generate/ - Generate tutorial from transcript
-    
-    All operations are restricted to authenticated users and their own data.
     """
     serializer_class = TranscriptSerializer
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser]
 
     def get_queryset(self):
-        """
-        Filter transcripts to only show current user's data
-        Returns: Transcripts belonging to the authenticated user
-        """
+        """Filter transcripts to current user only."""
         return Transcript.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        """
-        handle file upload: read JSON file, compute fingerprint, validate and save transcript.
-        """
-        file = request.FILES['file']
-        raw = file.read()
-        data = json.loads(raw)
-        # Compute a SHA-256 hash of the raw JSON to prevent duplicates
-        fingerprint = hashlib.sha256(raw).hexdigest()
+        """Upload JSON transcript file with optional video file."""
+        print(f"=== TRANSCRIPT UPLOAD DEBUG ===")
+        print(f"Files received: {list(request.FILES.keys())}")
         
-        # Validate parsed JSON against TranscriptSerializer
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        # Save transcript linked to current user, including metadata
-        serializer.save(user=request.user, filename=file.name, fingerprint=fingerprint)
-        return Response(serializer.data, status=201)
+        if 'file' not in request.FILES:
+            return Response({"detail": "JSON transcript file is required"}, status=400)
+        
+        json_file = request.FILES['file']
+        video_file = request.FILES.get('video_file')
+        
+        print(f"JSON file: {json_file.name}, size: {json_file.size}")
+        print(f"Video file: {video_file.name if video_file else 'None'}, size: {video_file.size if video_file else 'None'}")
+        
+        try:
+            # Parse JSON and create fingerprint for duplicate detection
+            raw = json_file.read()
+            data = json.loads(raw)
+            fingerprint = hashlib.sha256(raw).hexdigest()
+            
+            print(f"JSON parsed successfully, fingerprint: {fingerprint[:8]}...")
+            
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            
+            print(f"Serializer validation passed")
+            print(f"About to save transcript with video_file: {video_file}")
+            
+            transcript = serializer.save(
+                user=request.user, 
+                filename=json_file.name, 
+                fingerprint=fingerprint,
+                video_file=video_file
+            )
+            
+            print(f"✅ Transcript saved successfully: {transcript.id}")
+            print(f"Video file path: {transcript.video_file.path if transcript.video_file else 'None'}")
+            print(f"Has video: {transcript.has_video()}")
+            
+            return Response(serializer.data, status=201)
+            
+        except json.JSONDecodeError:
+            print(f"❌ JSON decode error")
+            return Response({"detail": "Invalid JSON format"}, status=400)
+        except Exception as e:
+            print(f"❌ Upload error: {type(e)} - {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({"detail": f"Upload error: {str(e)}"}, status=500)
 
     @action(detail=True, methods=['post'])
     def generate(self, request, pk=None):
-        """
-        generate a tutorial from the transcript via OpenAI and save it to the database.
-        """
+        """Generate tutorial from transcript using OpenAI and extract video clips."""
         transcript = self.get_object()
         
         try:
-            # Extract plain text from transcript phrases
-            raw_text = "\n".join(p["display"] for p in transcript.phrases if p.get("display"))
+            # Generate tutorial structure with OpenAI
+            tutorial_data = generate_tutorial_from_transcript(transcript.phrases)
             
-            # Call OpenAI client to build tutorial structure
-            data = generate_tutorial_from_transcript(raw_text)
-            
-            # Create Tutorial instance with returned JSON fields
             tutorial = Tutorial.objects.create(
                 transcript=transcript,
-                title=data['title'],
-                introduction=data['introduction'],
-                steps=data['steps'],
-                examples=data.get('examples', []),
-                summary=data['summary'],
-                duration_estimate=data['duration_estimate'],
-                tags=data['tags'],
+                title=tutorial_data['title'],
+                introduction=tutorial_data['introduction'],
+                steps=tutorial_data['steps'],
+                examples=tutorial_data.get('examples', []),
+                summary=tutorial_data['summary'],
+                duration_estimate=tutorial_data['duration_estimate'],
+                tags=tutorial_data['tags'],
             )
-            # Return serialized tutorial
-            return Response(TutorialSerializer(tutorial).data, status=status.HTTP_201_CREATED)
+            
+            # Extract video clips if video is available
+            if transcript.video_file:
+                self._extract_video_clips(tutorial, transcript)
+            
+            return Response(TutorialSerializer(tutorial).data, status=201)
             
         except Exception as e:
-            return Response(
-                {"detail": str(e)},
-                status=status.HTTP_502_BAD_GATEWAY
-            )
+            return Response({"detail": f"Generation failed: {str(e)}"}, status=502)
+    
+    def _extract_video_clips(self, tutorial, transcript):
+        """Extract video clips organized by transcript/tutorial structure."""
+        # Structure hiérarchique: media/tutorials/{transcript_id}/{tutorial_id}/clips/
+        clips_dir = os.path.join(settings.MEDIA_ROOT, 'tutorials', str(transcript.id), str(tutorial.id), 'clips')
+        os.makedirs(clips_dir, exist_ok=True)
+        
+        updated_steps = []
+        
+        for step in tutorial.steps:
+            step = step.copy()  # Copie pour éviter les mutations
+            
+            if video_clip := step.get('video_clip'):
+                start, end = video_clip['start'], video_clip['end']
+                # Nom descriptif avec timing
+                filename = f"step_{step['index']:02d}_{start:.1f}s-{end:.1f}s.mp4"
+                filepath = os.path.join(clips_dir, filename)
+                
+                try:
+                    # Extract video segment using MoviePy
+                    clip = VideoFileClip(transcript.video_file.path).subclipped(start, end)
+                    clip.write_videofile(filepath, audio_codec='aac') # Force audio codec
+                    clip.close()
+                    
+                    # URL avec nouvelle structure
+                    step['video_clip']['file_url'] = f"/media/tutorials/{transcript.id}/{tutorial.id}/clips/{filename}"
+                except:
+                    pass
+            
+            updated_steps.append(step)
+        
+        tutorial.steps = updated_steps
+        tutorial.save()
 
 
 class TutorialViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for listing, retrieving, creating, updating and deleting tutorials.
-    """
+    """API endpoints for tutorial CRUD operations."""
     serializer_class = TutorialSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """
-        restrict tutorials to those belonging to the current user.
-        """
+        """Filter tutorials to current user only."""
         return Tutorial.objects.filter(transcript__user=self.request.user)

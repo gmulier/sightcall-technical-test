@@ -37,7 +37,8 @@ class Transcript(models.Model):
     
     Stores the JSON transcript data uploaded by users, including
     metadata like duration, phrases, and a unique fingerprint
-    to prevent duplicate uploads.
+    to prevent duplicate uploads. Can optionally include a video
+    file for automated asset extraction.
     """
     # Primary key as UUID for better security and uniqueness
     id = models.UUIDField(
@@ -59,6 +60,14 @@ class Transcript(models.Model):
     filename = models.CharField(
         max_length=255,
         help_text="Original filename of the uploaded transcript"
+    )
+    
+    # Optional video file uploaded with the transcript
+    video_file = models.FileField(
+        upload_to='transcript_videos/',
+        blank=True,
+        null=True,
+        help_text="Optional video file associated with this transcript for asset extraction"
     )
     
     # Timestamp from the transcript data (when conversation occurred)
@@ -104,6 +113,10 @@ class Transcript(models.Model):
     def get_phrase_count(self):
         """Get total number of phrases in this transcript"""
         return len(self.phrases) if self.phrases else 0
+    
+    def has_video(self):
+        """Check if this transcript has an associated video file"""
+        return bool(self.video_file)
 
 
 class Tutorial(models.Model):

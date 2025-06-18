@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Block } from 'jsxstyle';
 import { FileText, ClipboardList, BookOpen, LogOut } from 'lucide-react';
-import { Button, Avatar, TutorialCard, TutorialModal, Toast, TranscriptRow } from '../components';
+import { Button, Avatar, TutorialCard, TutorialModal, Toast, TranscriptRow, UploadSection } from '../components';
 import { User, Tutorial } from '../types';
 import { useToast } from '../hooks/useToast';
 import { useData } from '../hooks/useData';
@@ -98,27 +98,34 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
   const [selectedTutorial, setSelectedTutorial] = useState<Tutorial | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   /**
-   * Handle transcript file upload
+   * Handle transcript and video file upload
    * 
-   * Processes JSON file uploads, validates content, and sends to Django API.
+   * Processes JSON file uploads with optional video, validates content, and sends to Django API.
    * Provides user feedback for success/error states.
    * 
-   * @param event - File input change event
+   * @param jsonFile - JSON transcript file (required)
+   * @param videoFile - Video file (optional)
    */
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const handleFileUpload = async (jsonFile: File, videoFile?: File) => {
+    setIsUploading(true);
     try {
-      await api.uploadTranscript(file);
-      show('Transcript uploaded successfully', 'success');
+      await api.uploadTranscript(jsonFile, videoFile);
+      show(
+        videoFile 
+          ? 'Transcript and video uploaded successfully' 
+          : 'Transcript uploaded successfully', 
+        'success'
+      );
       refetchTranscripts();
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Upload error';
       const isDuplicate = errorMsg.includes('duplicate') || errorMsg.includes('unique') || errorMsg.includes('already exists');
       show(isDuplicate ? 'Transcript already exists' : 'Upload failed', 'error');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -239,69 +246,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) 
         </Button>
       </Block>
 
-      {/* Upload Section - File upload for transcripts */}
-      <Block
-        backgroundColor="white"
-        padding="24px"
-        borderRadius="12px"
-        boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
-        marginBottom="24px"
-      >
-        {/* Section title */}
-        <Block 
-          display="flex"
-          alignItems="center"
-          gap="8px"
-          fontSize="20px" 
-          fontWeight={600} 
-          marginBottom="16px"
-          color="#24292e"
-        >
-          <FileText size={20} />
-          Upload Transcript
-        </Block>
-        
-        {/* File drop zone */}
-        <Block
-          border="2px dashed #d1d5da"
-          borderRadius="8px"
-          padding="20px"
-          textAlign="center"
-          backgroundColor="#f6f8fa"
-          position="relative"
-        >
-          {/* Hidden file input */}
-          <Block
-            component="input"
-            position="absolute"
-            top="0"
-            left="0"
-            width="100%"
-            height="100%"
-            opacity="0"
-            cursor="pointer"
-            props={{ 
-              type: 'file',
-              accept: 'application/json',
-              onChange: handleFileUpload,
-              style: { zIndex: 1 }
-            }}
-          />
-          
-          {/* Drop zone content */}
-          <Block fontSize="16px" color="#586069" marginBottom="8px">
-            <Block display="flex" alignItems="center" justifyContent="center" gap="8px">
-              <FileText size={18} />
-              Drag your JSON file here or click to select
-            </Block>
-          </Block>
-          
-          <Block fontSize="14px" color="#959da5">
-            Accepted format: JSON only
-          </Block>
-        </Block>
-
-      </Block>
+      {/* Upload Section - File upload for transcripts and videos */}
+      <UploadSection
+        onUpload={handleFileUpload}
+        isUploading={isUploading}
+      />
 
       {/* Transcripts List Section */}
       <Block

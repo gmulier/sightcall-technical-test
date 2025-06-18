@@ -14,4 +14,5 @@ export { Toast } from './Toast';          // Toast notification component
 // Tutorial-specific Components  
 export { TutorialCard } from './TutorialCard';    // Tutorial preview card for grid display
 export { TutorialModal } from './TutorialModal';  // Modal for viewing/editing tutorials
-export { TranscriptRow } from './TranscriptRow';  // Individual transcript row component 
+export { TranscriptRow } from './TranscriptRow';  // Individual transcript row component
+export { UploadSection } from './UploadSection';  // New component for uploading content 

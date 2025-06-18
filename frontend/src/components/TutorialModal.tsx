@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Block } from 'jsxstyle';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { Edit3, Download, Trash2, X, Save } from 'lucide-react';
 import { Tutorial } from '../types';
 import { markdownStyles } from '../styles/markdown';
@@ -228,11 +229,16 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
                   fontSize="14px"
                   resize="vertical"
                   props={{
-                    value: editedTutorial.steps.join('\n'),
+                    value: editedTutorial.steps.map(step => step.text).join('\n'),
                     onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) =>
                       setEditedTutorial({ 
                         ...editedTutorial, 
-                        steps: e.target.value.split('\n').filter(step => step.trim()) 
+                        steps: e.target.value.split('\n').filter(step => step.trim()).map((text, index) => ({
+                          index: index + 1,
+                          text: text,
+                          timestamp: editedTutorial.steps[index]?.timestamp,
+                          video_clip: editedTutorial.steps[index]?.video_clip
+                        }))
                       })
                   }}
                 />
@@ -265,7 +271,18 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
               color="#24292e"
               props={{ style: markdownStyles }}
             >
-              <ReactMarkdown>{currentMarkdown}</ReactMarkdown>
+              {currentMarkdown ? (
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>{currentMarkdown}</ReactMarkdown>
+              ) : (
+                <Block 
+                  textAlign="center" 
+                  padding="40px" 
+                  color="#586069"
+                  fontSize="14px"
+                >
+                  Loading tutorial content...
+                </Block>
+              )}
             </Block>
           )}
         </Block>

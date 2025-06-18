@@ -58,13 +58,15 @@ SECRET_KEY=your-secret-key-here
 - Personal workspace for each user
 
 ### **Transcript Management**
-- Upload JSON transcript files
+- Upload JSON transcript files with optional video files
+- Dual file upload with drag & drop support
 - Automatic duplicate detection (SHA-256 fingerprinting)
 - File metadata tracking (duration, phrase count, language)
 - Real-time upload status with user feedback
+- Support for MP4, MOV, AVI video formats
 
 ### **AI-Powered Tutorial Generation**
-- OpenAI GPT-4o-mini integration
+- OpenAI GPT-4o integration
 - Intelligent content structuring
 - Automatic generation of:
   - Descriptive titles
@@ -74,6 +76,15 @@ SECRET_KEY=your-secret-key-here
   - Step-by-step instructions
   - Practical examples
   - Concise summaries
+
+### **Video Integration**
+- Upload video files alongside transcript JSON
+- Automatic video clip extraction for tutorial steps
+- AI-powered timestamp detection for visual demonstrations
+- Hierarchical media organization by transcript and tutorial
+- HTML5 video player with responsive controls
+- Audio preservation with AAC codec
+- Descriptive filenames with timing information
 
 ### **Tutorial Management**
 - Interactive tutorial viewer with Markdown rendering
@@ -105,7 +116,9 @@ SECRET_KEY=your-secret-key-here
 - **Database**: PostgreSQL with JSON field support
 - **Authentication**: GitHub OAuth2 via social-auth-app-django
 - **AI Integration**: OpenAI Python SDK
+- **Video Processing**: MoviePy with FFmpeg backend
 - **API**: RESTful endpoints with CSRF protection
+- **Media Storage**: Hierarchical file organization for video clips
 
 ### Frontend (React + TypeScript)
 - **Framework**: React 18 with TypeScript
@@ -129,8 +142,8 @@ SECRET_KEY=your-secret-key-here
 
 ### Transcripts
 - `GET /api/transcripts/` - List user's transcripts
-- `POST /api/transcripts/` - Upload new transcript
-- `POST /api/transcripts/{id}/generate/` - Generate tutorial from transcript
+- `POST /api/transcripts/` - Upload transcript with optional video file
+- `POST /api/transcripts/{id}/generate/` - Generate tutorial with video clips
 
 ### Tutorials
 - `GET /api/tutorials/` - List user's tutorials
@@ -188,6 +201,11 @@ docker-compose exec backend python manage.py showmigrations
 │   │   ├── utils/          # Utility functions and API client
 │   │   └── types/          # TypeScript type definitions
 │   └── Dockerfile          # Frontend container configuration
+├── media/                  # Media storage
+│   ├── transcript_videos/  # Uploaded source videos
+│   └── tutorials/          # Organized video clips by tutorial
+├── docs/                   # Technical documentation
+│   └── VIDEO_INTEGRATION.md # Video system implementation details
 ├── scripts/                # Management scripts
 │   ├── common.sh           # Shared functions and utilities
 │   ├── start.sh            # Application startup logic

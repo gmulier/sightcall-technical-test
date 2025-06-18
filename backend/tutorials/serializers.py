@@ -22,14 +22,15 @@ class TranscriptSerializer(serializers.ModelSerializer):
     
     Handles serialization of transcript data for API responses.
     Includes nested user data and makes most fields read-only since
-    transcripts are uploaded as complete JSON files.
+    transcripts are uploaded as complete JSON files. Now supports
+    optional video file upload alongside the transcript JSON.
     """
     # Nested serializer to include user information in transcript responses
     user = UserSerializer(read_only=True)
     
     class Meta:
         model = Transcript
-        fields = ['id', 'user', 'filename', 'timestamp', 'duration_in_ticks', 'phrases', 'created_at']
+        fields = ['id', 'user', 'filename', 'video_file', 'timestamp', 'duration_in_ticks', 'phrases', 'created_at']
         read_only_fields = ['id', 'user', 'filename']
 
 
@@ -38,8 +39,8 @@ class TutorialSerializer(serializers.ModelSerializer):
     Serializer for Tutorial model
     
     Handles serialization of tutorial data for API responses and updates.
-    Includes nested transcript data with user information. Most fields
-    can be updated except for id, transcript reference, and timestamps.
+    Includes nested transcript data with user information and enriched
+    steps structure with associated assets.
     """
     # Nested serializer to include full transcript information
     transcript = TranscriptSerializer(read_only=True)

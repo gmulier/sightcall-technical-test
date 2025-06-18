@@ -43,5 +43,15 @@ export const markdownStyles = {
     paddingLeft: '16px', 
     color: '#6a737d', 
     marginBottom: '16px' 
+  },
+  '& video': {
+    maxWidth: '100%',
+    height: 'auto',
+    borderRadius: '8px',
+    margin: '8px 0',
+    transition: 'opacity 0.3s ease',
+    '&:hover': {
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+    }
   }
 }; 

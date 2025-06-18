@@ -1,8 +1,21 @@
+# Core Django dependencies
 Django==4.2.7
 djangorestframework==3.14.0
-social-auth-app-django==5.2.0
-psycopg2-binary==2.9.9
-openai>=1.86.0
 django-environ==0.11.2
 django-cors-headers==4.1.0
-gunicorn
+
+# Authentication
+social-auth-app-django==5.2.0
+
+# AI Integration
+openai>=1.86.0
+
+# Video processing (MoviePy for frame extraction)
+moviepy==2.2.1
+
+# Database
+psycopg2-binary==2.9.10
+
+# Production server
+gunicorn==21.2.0
+

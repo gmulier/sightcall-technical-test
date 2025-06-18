@@ -3,33 +3,30 @@ import json
 from django.conf import settings
 
 
-def generate_tutorial_from_transcript(text: str) -> dict:
+def generate_tutorial_from_transcript(phrases: list) -> dict:
     """
-    Generate structured tutorial content from transcript text using OpenAI
-    
-    Takes raw transcript text and uses OpenAI's GPT model to generate
-    a comprehensive tutorial with structured sections and markdown content.
+    Generate structured tutorial with video clips from transcript phrases using OpenAI.
     
     Args:
-        transcript_text (str): Raw text extracted from conversation transcript
+        phrases (list): List of transcript phrases with timing data
         
     Returns:
-        dict: Structured tutorial data with the following keys:
+        dict: Structured tutorial data with steps containing optional video_clip:
             - title: Tutorial title
-            - introduction: Introduction paragraph
-            - steps: List of step-by-step instructions
+            - introduction: Introduction paragraph  
+            - steps: List of steps with text, index, timestamp, and optional video_clip
             - examples: List of practical examples
             - summary: Summary paragraph
             - duration_estimate: Estimated completion time
             - tags: List of relevant keywords
-            
-    Raises:
-        Exception: If OpenAI API call fails or returns invalid data
     """
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    
+    # Send raw JSON transcript directly to OpenAI
+    raw_transcript_json = json.dumps(phrases, indent=2)
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[
             {
                 "role": "system",
@@ -37,17 +34,21 @@ def generate_tutorial_from_transcript(text: str) -> dict:
             },
             {
                 "role": "user", 
-                "content": settings.OPENAI_USER_PROMPT_TEMPLATE.format(text=text)
+                "content": settings.OPENAI_USER_PROMPT_TEMPLATE.format(transcript_json=raw_transcript_json)
             }
         ],
-        max_tokens=1200,
-        temperature=0.7,
+        max_tokens=4096,
+        temperature=0.2,
+        top_p=0.9,
     )
     
-    # Parse le JSON retourné par l'IA
+    # Parse JSON response from OpenAI
     raw_content = response.choices[0].message.content.strip()
+    
     try:
         return json.loads(raw_content)
     except json.JSONDecodeError as e:
-        # Fallback si l'IA ne retourne pas du JSON valide
-        raise ValueError(f"OpenAI response is not valid JSON: {e}") 
+        raise ValueError(f"OpenAI response is not valid JSON: {e}")
+
+
+ 
