@@ -1,12 +1,31 @@
 # AI Tutorials Generator
 
-An intelligent web application that transforms conversation transcripts into structured, professional tutorials using OpenAI's GPT technology.
+**Transform any conversation into professional documentation with AI-powered intelligence**
+
+An advanced web application that automatically converts conversation transcripts into polished, step-by-step tutorials using OpenAI's latest GPT-4o technology. Upload transcripts with videos and get structured tutorials with synchronized video clips in seconds.
 
 ## Overview
 
-AI Tutorials Generator automatically converts raw conversation transcripts (JSON format) into well-structured, step-by-step tutorials. Perfect for creating documentation from meetings, training sessions, or technical discussions.
+**Transform conversations into professional tutorials in seconds!** 
 
-## 🚀 Quick Start
+AI Tutorials Generator leverages cutting-edge OpenAI technology to automatically convert raw conversation transcripts into polished, step-by-step tutorials. Simply upload your JSON transcript (with optional video), and watch as AI creates structured documentation complete with:
+
+- **Intelligent Content Organization** - Automatic step detection and logical flow
+- **Smart Video Integration** - AI-extracted clips synchronized with tutorial steps  
+- **Professional Formatting** - Clean Markdown rendering with embedded media
+- **Rich Metadata** - Auto-generated titles, tags, and reading estimates
+
+Perfect for creating documentation from meetings, training sessions, technical discussions, or any recorded conversation that needs to become actionable content.
+
+## How It Works
+
+1. **Upload** your JSON transcript + optional video file
+2. **AI Processing** - GPT-4o analyzes conversation flow and content  
+3. **Tutorial Generation** - Structured content with titles, steps, tips, and summaries
+4. **Video Sync** - Automatic clip extraction at relevant timestamps
+5. **Export** - Download professional Markdown with video clip references
+
+## Quick Start
 
 ### Prerequisites (to install)
 - Docker and Docker Compose
@@ -52,86 +71,79 @@ SECRET_KEY=your-secret-key-here
 
 ## Features
 
-### **Authentication**
-- GitHub OAuth2 integration
-- Secure user sessions
-- Personal workspace for each user
+### **Authentication & Security**
+- GitHub OAuth2 integration for seamless login
+- Secure user sessions with personal workspaces
+- CSRF protection and input validation
+- Automatic duplicate detection to prevent re-uploads
 
-### **Transcript Management**
-- Upload JSON transcript files with optional video files
-- Dual file upload with drag & drop support
-- Automatic duplicate detection (SHA-256 fingerprinting)
-- File metadata tracking (duration, phrase count, language)
-- Real-time upload status with user feedback
-- Support for MP4, MOV, AVI video formats
+### **Smart File Management**
+- **Drag & Drop Upload** - Simply drag JSON transcripts and videos
+- **Intelligent File Detection** - Auto-identifies file types
+- **Dual File Support** - Upload transcript + video simultaneously
+- **Real-time Feedback** - Live upload progress and status
+- **Multiple Video Formats** - MP4, MOV, AVI, MKV, WebM support
 
 ### **AI-Powered Tutorial Generation**
-- OpenAI GPT-4o integration
-- Intelligent content structuring
-- Automatic generation of:
-  - Descriptive titles
-  - Reading time estimates
-  - Relevant tags/keywords
-  - Contextual introductions
-  - Step-by-step instructions
-  - Practical examples
-  - Concise summaries
+- **GPT-4o Integration** - Latest OpenAI model for superior content quality
+- **Conversation Analysis** - Understands context and flow from transcripts
+- **Auto-Generated Content**:
+  - Compelling titles and introductions
+  - Step-by-step instructions with logical flow
+  - Practical tips and best practices
+  - Comprehensive summaries
+  - Relevant tags and estimated reading time
 
-### **Video Integration**
-- Upload video files alongside transcript JSON
-- Automatic video clip extraction for tutorial steps
-- AI-powered timestamp detection for visual demonstrations
-- Hierarchical media organization by transcript and tutorial
-- HTML5 video player with responsive controls
-- Audio preservation with AAC codec
-- Descriptive filenames with timing information
+### **Advanced Video Processing**
+- **Smart Clip Extraction** - AI detects optimal moments for visual demonstrations
+- **Automatic Timestamping** - Syncs video clips with tutorial steps
+- **Professional Organization** - Hierarchical storage for easy management
+- **Embedded Players** - HTML5 video integration in tutorial viewer
+- **Video References** - Clip URLs referenced in exported Markdown
 
 ### **Tutorial Management**
-- Interactive tutorial viewer with Markdown rendering
-- In-place editing capabilities
-- Export to Markdown format
-- Delete functionality with confirmation
-- Responsive grid layout
+- **Live Preview** - Interactive Markdown rendering with embedded videos
+- **Inline Editing** - Edit tutorials directly in the interface
+- **One-Click Export** - Download as professional Markdown files
+- **Safe Deletion** - Confirmation dialogs for important actions
+- **Responsive Design** - Works perfectly on all devices
 
 ### **User Experience**
-- Modern, clean interface
-- Real-time loading states and animations
-- Toast notifications for user feedback
-- Responsive design for all screen sizes
-- Intuitive navigation and interactions
+- **Modern Interface** - Clean, professional design
+- **Instant Feedback** - Toast notifications and loading states
+- **Keyboard Navigation** - Efficient shortcuts (ESC to close modals)
+- **Smart Interactions** - Click outside to close, intuitive workflows
+- **Mobile Friendly** - Fully responsive across all screen sizes
 
-### **Technical Features**
-- Dockerized deployment with intelligent startup
-- Automatic database migrations
-- Pre-flight checks and service readiness detection
-- CSRF protection
-- CORS configuration
-- RESTful API architecture with DRF (Django REST Framework)
-- PostgreSQL database with JSON field support
+### **Technical Excellence**
+- **Containerized Deployment** - One-command startup with Docker
+- **Intelligent Health Checks** - Automatic service readiness detection
+- **Database Automation** - Auto-migrations and setup
+- **RESTful API** - Clean, documented endpoints
+- **Production Ready** - Scalable architecture with PostgreSQL
 
 ## Architecture
 
 ### Backend (Django + DRF)
 - **Framework**: Django 4.2.7 with Django REST Framework
-- **Database**: PostgreSQL with JSON field support
-- **Authentication**: GitHub OAuth2 via social-auth-app-django
-- **AI Integration**: OpenAI Python SDK
-- **Video Processing**: MoviePy with FFmpeg backend
-- **API**: RESTful endpoints with CSRF protection
-- **Media Storage**: Hierarchical file organization for video clips
+- **Database**: PostgreSQL 15 with JSON field support  
+- **Authentication**: GitHub OAuth2 integration
+- **AI Integration**: OpenAI GPT-4o Python SDK
+- **Video Processing**: MoviePy for professional clip extraction
+- **API**: Secure RESTful endpoints with CSRF protection
 
 ### Frontend (React + TypeScript)
-- **Framework**: React 18 with TypeScript
-- **Styling**: JSXStyle for component-scoped CSS
-- **State Management**: React hooks with custom data fetching
-- **UI Components**: Lucide React icons, ReactMarkdown
-- **Build Tool**: Vite for fast development and building
+- **Framework**: React 18 with full TypeScript support
+- **Styling**: Component-scoped CSS with JSXStyle
+- **State Management**: Custom React hooks for optimal performance
+- **UI Components**: Modern icons and Markdown rendering
+- **User Experience**: Drag & drop, real-time feedback, responsive design
 
 ### Infrastructure
-- **Containerization**: Docker with multi-stage builds
+- **Containerization**: Docker with optimized multi-stage builds
 - **Database**: PostgreSQL 15 with intelligent startup detection
-- **Reverse Proxy**: Nginx for frontend serving
-- **Process Management**: Gunicorn for Django application
+- **Web Server**: Nginx for efficient static file serving
+- **Process Management**: Gunicorn for production-ready deployment
 
 ## API Endpoints
 
