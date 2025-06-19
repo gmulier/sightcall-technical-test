@@ -2,7 +2,7 @@ import React from 'react';
 import { Block } from 'jsxstyle';
 import { TutorialBodyProps } from './types';
 import { TutorialViewer } from './TutorialViewer';
-import { TutorialEditor } from './TutorialEditor';
+import { TutorialEditor } from '../TutorialEditor';
 
 export const TutorialBody: React.FC<TutorialBodyProps> = ({
   tutorial,

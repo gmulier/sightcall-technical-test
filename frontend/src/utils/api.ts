@@ -116,4 +116,9 @@ export const api = {
       method: 'DELETE',
     });
   },
+
+  async downloadZip(tutorialId: string): Promise<Blob> {
+    const response = await apiFetch(`/api/tutorials/${tutorialId}/export_zip/`);
+    return response.blob();
+  },
 }; 

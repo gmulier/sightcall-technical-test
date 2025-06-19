@@ -4,7 +4,7 @@ import { TutorialModalProps } from './types';
 import { TutorialHeader } from './TutorialHeader';
 import { TutorialBody } from './TutorialBody';
 import { TutorialFooter } from './TutorialFooter';
-import { generateMarkdown } from '../../utils/markdownGenerator';
+import { api } from '../../utils/api';
 
 export const TutorialModal: React.FC<TutorialModalProps> = ({ 
   tutorial, 
@@ -15,6 +15,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTutorial, setEditedTutorial] = useState(tutorial);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (tutorial) {
@@ -26,6 +27,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setIsEditing(false);
+      setIsExporting(false);
     }
   }, [isOpen]);
 
@@ -43,16 +45,27 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
     }
   }, [tutorial]);
 
-  const handleExport = useCallback(() => {
-    if (editedTutorial) {
-      const markdown = generateMarkdown(editedTutorial);
-      const blob = new Blob([markdown], { type: 'text/markdown' });
+
+
+  const handleExportZip = useCallback(async () => {
+    if (!editedTutorial?.id) return;
+    
+    setIsExporting(true);
+    try {
+      const blob = await api.downloadZip(editedTutorial.id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${editedTutorial.title.replace(/[^a-z0-9]/gi, '_')}.md`;
+      a.download = `tutorial_${editedTutorial.id}.zip`;
+      document.body.appendChild(a);
       a.click();
+      a.remove();
       URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Échec de l'export ZIP.");
+    } finally {
+      setIsExporting(false);
     }
   }, [editedTutorial]);
 
@@ -118,7 +131,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
           onCancel={handleCancel}
           onSave={handleSave}
           onDelete={handleDelete}
-          onExport={handleExport}
+          onExportZip={handleExportZip}
         />
       </Block>
     </Block>

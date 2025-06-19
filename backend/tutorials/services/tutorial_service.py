@@ -1,9 +1,12 @@
 import logging
+import os
 from typing import Dict, Any
 from django.db import transaction
+from django.conf import settings
 from ..models import Tutorial, Transcript
 from ..openai_client import generate_tutorial_from_transcript
 from .video_service import VideoClipService
+from .html_service import HtmlService
 
 logger = logging.getLogger(__name__)
 
@@ -53,3 +56,36 @@ class TutorialService:
         except Exception as e:
             logger.error(f"Tutorial generation failed for transcript {transcript.id}: {e}")
             raise 
+    
+    @staticmethod
+    def generate_html(tutorial: Tutorial) -> str:
+        """
+        Generate standalone HTML content from tutorial object.
+        
+        Args:
+            tutorial: Tutorial instance to convert to HTML
+            
+        Returns:
+            Complete HTML string with embedded CSS and video elements
+        """
+        return HtmlService.generate_html(tutorial)
+    
+
+    
+    @staticmethod
+    def get_media_path(tutorial: Tutorial) -> str:
+        """
+        Get the media directory path for a tutorial.
+        
+        Args:
+            tutorial: Tutorial instance
+            
+        Returns:
+            Absolute path to the tutorial's media directory
+        """
+        return os.path.join(
+            settings.MEDIA_ROOT,
+            'tutorials', 
+            str(tutorial.transcript.id),
+            str(tutorial.id)
+        ) 

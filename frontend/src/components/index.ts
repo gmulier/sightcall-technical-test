@@ -13,6 +13,8 @@ export { Toast } from './Toast';          // Toast notification component
 
 // Tutorial-specific Components  
 export { TutorialCard } from './TutorialCard';    // Tutorial preview card for grid display
-export { TutorialModal } from './TutorialModal/TutorialModal';  // Refactored modal for viewing/editing tutorials
+export { TutorialModal } from './TutorialModal';  // Modal orchestrator for viewing/editing tutorials
+export { TutorialReader } from './TutorialReader'; // Tutorial reading components
+export { TutorialEditor } from './TutorialEditor'; // Tutorial editing components
 export { TranscriptRow } from './TranscriptRow';  // Individual transcript row component
 export { UploadSection } from './UploadSection/UploadSection';  // Refactored component for uploading content 

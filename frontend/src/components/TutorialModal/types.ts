@@ -25,5 +25,5 @@ export interface TutorialFooterProps {
   onCancel: () => void;
   onSave: () => void;
   onDelete: () => void;
-  onExport: () => void;
+  onExportZip: () => void;
 } 

@@ -12,7 +12,7 @@ AI Tutorials Generator leverages cutting-edge OpenAI technology to automatically
 
 - **Intelligent Content Organization** - Automatic step detection and logical flow
 - **Smart Video Integration** - AI-extracted clips synchronized with tutorial steps  
-- **Professional Formatting** - Clean Markdown rendering with embedded media
+- **Professional HTML Export** - Self-contained tutorials with embedded media
 - **Rich Metadata** - Auto-generated titles, tags, and reading estimates
 
 Perfect for creating documentation from meetings, training sessions, technical discussions, or any recorded conversation that needs to become actionable content.
@@ -23,7 +23,7 @@ Perfect for creating documentation from meetings, training sessions, technical d
 2. **AI Processing** - GPT-4o analyzes conversation flow and content  
 3. **Tutorial Generation** - Structured content with titles, steps, tips, and summaries
 4. **Video Sync** - Automatic clip extraction at relevant timestamps
-5. **Export** - Download professional Markdown with video clip references
+5. **Export** - Download complete ZIP package with HTML tutorial + video clips
 
 ## Quick Start
 
@@ -99,12 +99,13 @@ SECRET_KEY=your-secret-key-here
 - **Automatic Timestamping** - Syncs video clips with tutorial steps
 - **Professional Organization** - Hierarchical storage for easy management
 - **Embedded Players** - HTML5 video integration in tutorial viewer
-- **Video References** - Clip URLs referenced in exported Markdown
+- **Offline Playback** - Video clips included in ZIP exports for standalone viewing
 
 ### **Tutorial Management**
-- **Live Preview** - Interactive Markdown rendering with embedded videos
-- **Inline Editing** - Edit tutorials directly in the interface
-- **One-Click Export** - Download as professional Markdown files
+- **Interactive Preview** - Modern component-based tutorial viewer
+- **Inline Editing** - Edit tutorials directly in the interface with specialized editors
+- **One-Click Download** - Export complete ZIP packages with HTML + video clips
+- **Offline Compatible** - Self-contained exports work without internet connection
 - **Safe Deletion** - Confirmation dialogs for important actions
 - **Responsive Design** - Works perfectly on all devices
 
@@ -134,9 +135,9 @@ SECRET_KEY=your-secret-key-here
 
 ### Frontend (React + TypeScript)
 - **Framework**: React 18 with full TypeScript support
-- **Styling**: Component-scoped CSS with JSXStyle
+- **Styling**: Component-scoped CSS with JSXStyle and centralized styling system
 - **State Management**: Custom React hooks for optimal performance
-- **UI Components**: Modern icons and Markdown rendering
+- **UI Components**: Modular architecture with specialized Reader/Editor components
 - **User Experience**: Drag & drop, real-time feedback, responsive design
 
 ### Infrastructure
@@ -161,6 +162,7 @@ SECRET_KEY=your-secret-key-here
 - `GET /api/tutorials/` - List user's tutorials
 - `PATCH /api/tutorials/{id}/` - Update tutorial
 - `DELETE /api/tutorials/{id}/` - Delete tutorial
+- `GET /api/tutorials/{id}/export_zip/` - Download ZIP package with HTML + videos
 
 ## Development
 
@@ -203,28 +205,26 @@ docker-compose exec backend python manage.py showmigrations
 ├── backend/                 # Django application
 │   ├── config/             # Django settings and URLs
 │   ├── tutorials/          # Main app with models, views, serializers
+│   │   └── services/       # Business logic (TutorialService, VideoService, HtmlService)
 │   ├── Dockerfile          # Backend container configuration
 │   └── entrypoint.sh       # Automatic migrations script
 ├── frontend/               # React application
 │   ├── src/
 │   │   ├── components/     # Reusable UI components
+│   │   │   ├── TutorialModal/    # Modal orchestrator
+│   │   │   ├── TutorialReader/   # Tutorial viewing components
+│   │   │   └── TutorialEditor/   # Tutorial editing components
 │   │   ├── pages/          # Main application pages
 │   │   ├── hooks/          # Custom React hooks
 │   │   ├── utils/          # Utility functions and API client
+│   │   ├── styles/         # Centralized styling system
 │   │   └── types/          # TypeScript type definitions
 │   └── Dockerfile          # Frontend container configuration
 ├── media/                  # Media storage
 │   ├── transcript_videos/  # Uploaded source videos
 │   └── tutorials/          # Organized video clips by tutorial
 ├── docs/                   # Technical documentation
-│   └── VIDEO_INTEGRATION.md # Video system implementation details
 ├── scripts/                # Management scripts
-│   ├── common.sh           # Shared functions and utilities
-│   ├── start.sh            # Application startup logic
-│   ├── stop.sh             # Service shutdown
-│   ├── reset-db.sh         # Database reset utility
-│   ├── diagnose.sh         # System diagnostics
-│   └── backend-entrypoint.sh # Backend container entrypoint
 ├── docker-compose.yml      # Multi-service orchestration
 ├── run                     # Main project manager script
 └── .env.example           # Environment template

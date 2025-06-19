@@ -13,14 +13,10 @@ class VideoClipService:
         if not transcript.video_file:
             return
             
-        # Create clips directory exactly like before
-        clips_dir = os.path.join(
-            settings.MEDIA_ROOT, 
-            'tutorials', 
-            str(transcript.id), 
-            str(tutorial.id), 
-            'clips'
-        )
+        # Create clips directory using centralized path method
+        from .tutorial_service import TutorialService
+        tutorial_media_path = TutorialService.get_media_path(tutorial)
+        clips_dir = os.path.join(tutorial_media_path, 'clips')
         os.makedirs(clips_dir, exist_ok=True)
         
         updated_steps = []

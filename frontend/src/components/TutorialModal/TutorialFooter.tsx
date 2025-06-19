@@ -1,6 +1,6 @@
 import React from 'react';
 import { Block } from 'jsxstyle';
-import { Edit3, Download, Trash2, X, Save } from 'lucide-react';
+import { Edit3, Trash2, X, Save, Download } from 'lucide-react';
 import { TutorialFooterProps } from './types';
 
 export const TutorialFooter: React.FC<TutorialFooterProps> = ({
@@ -9,7 +9,7 @@ export const TutorialFooter: React.FC<TutorialFooterProps> = ({
   onCancel,
   onSave,
   onDelete,
-  onExport
+  onExportZip
 }) => {
   return (
     <Block
@@ -90,7 +90,7 @@ export const TutorialFooter: React.FC<TutorialFooterProps> = ({
           </Block>
         </>
       ) : (
-        // View mode: Edit on left, Export on right
+        // View mode: Edit on left, Export buttons on right
         <>
           <Block
             component="button"
@@ -128,10 +128,10 @@ export const TutorialFooter: React.FC<TutorialFooterProps> = ({
             gap="8px"
             transition="all 0.2s ease"
             hoverBackgroundColor="#0256cc"
-            props={{ onClick: onExport }}
+            props={{ onClick: onExportZip }}
           >
             <Download size={16} />
-            Export
+            Download
           </Block>
         </>
       )}
