@@ -9,7 +9,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <Block
       minHeight="100vh"
-      backgroundColor="#f8f9fa"
       fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
       lineHeight="1.6"
       color="#24292e"

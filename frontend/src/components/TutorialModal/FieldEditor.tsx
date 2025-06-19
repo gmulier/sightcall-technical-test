@@ -36,11 +36,16 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
         padding="8px"
         fontSize={type === 'textarea' ? '14px' : '16px'}
         resize={type === 'textarea' ? 'vertical' : undefined}
+        boxSizing="border-box"
+        outline="none"
         props={{
           value,
           onChange: handleChange,
           placeholder,
-          ...(type === 'textarea' && { rows })
+          ...(type === 'textarea' && { rows }),
+          style: {
+            fontFamily: 'inherit'
+          }
         }}
       />
     </Block>

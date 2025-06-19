@@ -20,6 +20,20 @@
     -->
     <title>AI Tutorials</title>
     <style>
+      /* CSS Reset - more selective to preserve markdown styling */
+      html, body, div, span, header, nav, main, aside, footer, section, article { 
+        margin: 0; 
+        padding: 0; 
+        box-sizing: border-box; 
+      }
+      body { 
+        margin: 0; 
+        padding: 0; 
+      }
+      /* Preserve default styling for text content elements */
+      h1, h2, h3, h4, h5, h6, p, ol, ul, li { 
+        box-sizing: border-box; 
+      }
       .spin { animation: spin 1s linear infinite; }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>

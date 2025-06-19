@@ -34,9 +34,9 @@ def auth_status(request):
 
 
 def logout_view(request):
-    """Logout user and redirect to React frontend."""
+    """Logout user and return success response."""
     logout(request)
-    return redirect('http://localhost:3000')
+    return JsonResponse({'success': True, 'message': 'Logged out successfully'})
 
 
 class TranscriptViewSet(viewsets.ModelViewSet):

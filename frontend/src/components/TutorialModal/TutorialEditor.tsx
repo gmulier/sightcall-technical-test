@@ -2,6 +2,7 @@ import React from 'react';
 import { Block } from 'jsxstyle';
 import { Tutorial } from '../../types';
 import { FieldEditor } from './FieldEditor';
+import { StepsEditor } from './StepsEditor';
 
 interface TutorialEditorProps {
   tutorial: Tutorial;
@@ -20,26 +21,19 @@ export const TutorialEditor: React.FC<TutorialEditorProps> = ({
         ...tutorial,
         tags: value.split(',').map(tag => tag.trim()).filter(tag => tag)
       });
-    } else if (field === 'steps') {
-      // Special handling for steps - convert string lines to step objects
-      onTutorialChange({
-        ...tutorial,
-        steps: value
-          .split('\n')
-          .filter(step => step.trim())
-          .map((text, index) => ({
-            index: index + 1,
-            text: text,
-            timestamp: tutorial.steps[index]?.timestamp,
-            video_clip: tutorial.steps[index]?.video_clip
-          }))
-      });
     } else {
       onTutorialChange({
         ...tutorial,
         [field]: value
       });
     }
+  };
+
+  const handleStepsChange = (steps: Tutorial['steps']) => {
+    onTutorialChange({
+      ...tutorial,
+      steps
+    });
   };
 
   return (
@@ -71,12 +65,9 @@ export const TutorialEditor: React.FC<TutorialEditorProps> = ({
         rows={4}
       />
 
-      <FieldEditor
-        label="Steps (step-by-step instructions)"
-        value={tutorial.steps.map(step => step.text).join('\n')}
-        onChange={handleFieldChange('steps')}
-        type="textarea"
-        rows={6}
+      <StepsEditor
+        steps={tutorial.steps}
+        onStepsChange={handleStepsChange}
       />
 
       <FieldEditor

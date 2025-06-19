@@ -6,7 +6,11 @@ import { PageLayoutProps } from '../types';
 
 export const PageLayout: React.FC<PageLayoutProps> = ({ user, onLogout, children }) => {
   return (
-    <Block padding="20px">
+    <Block 
+      minHeight="100vh"
+      backgroundColor="#f8f9fa"
+      padding="20px"
+    >
       {/* Header Section - User profile and logout */}
       <Block
         display="flex"
