@@ -103,7 +103,7 @@ export const api = {
         title: tutorial.title,
         introduction: tutorial.introduction,
         steps: tutorial.steps,
-        examples: tutorial.examples,
+        tips: tutorial.tips,
         summary: tutorial.summary,
         duration_estimate: tutorial.duration_estimate,
         tags: tutorial.tags,

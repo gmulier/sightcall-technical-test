@@ -48,7 +48,7 @@ class TutorialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tutorial
         fields = [
-            'id', 'transcript', 'title', 'introduction', 'steps', 'examples',
+            'id', 'transcript', 'title', 'introduction', 'steps', 'tips',
             'summary', 'duration_estimate', 'tags', 'updated_at'
         ]
         read_only_fields = ['id', 'transcript', 'updated_at'] 

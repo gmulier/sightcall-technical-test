@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import { api } from '../../../utils/api';
-import { useData } from '../../../hooks/useData';
+import { useTranscripts } from '../../../hooks/useTranscripts';
 import { TranscriptsManager } from '../types';
 
 export const useTranscriptsManager = (
   onTutorialGenerated?: () => void,
   showToast?: (message: string, type: 'success' | 'error') => void
 ): TranscriptsManager & { refetchTranscripts: () => void } => {
-  const { transcripts, loading, refetchTranscripts } = useData();
+  const { transcripts, loading, refetchTranscripts } = useTranscripts();
   const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   const generate = useCallback(async (transcriptId: string) => {

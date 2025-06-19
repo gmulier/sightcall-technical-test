@@ -36,7 +36,7 @@ class TutorialService:
                     title=tutorial_data['title'],
                     introduction=tutorial_data['introduction'],
                     steps=tutorial_data['steps'],
-                    examples=tutorial_data.get('examples', []),
+                    tips=tutorial_data.get('tips', []),
                     summary=tutorial_data['summary'],
                     duration_estimate=tutorial_data['duration_estimate'],
                     tags=tutorial_data['tags'],

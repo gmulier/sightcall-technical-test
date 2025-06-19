@@ -51,7 +51,7 @@ export interface Tutorial {
   title: string;  // AI-generated title
   introduction: string;  // AI-generated introduction paragraph
   steps: TutorialStep[];  // Array of enriched step objects with assets
-  examples: string[];  // Array of practical examples
+  tips: string[];  // Array of practical tips
   summary: string;  // AI-generated summary paragraph
   duration_estimate: string;  // Estimated completion time (e.g., "5 minutes")
   tags: string[];  // Array of relevant keywords/tags

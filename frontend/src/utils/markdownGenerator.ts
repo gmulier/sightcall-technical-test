@@ -46,12 +46,12 @@ export const generateMarkdown = (tutorial: Tutorial): string => {
     }
   });
 
-  // Add examples section if available
-  if (tutorial.examples.length > 0) {
+      // Add tips section if available
+  if (tutorial.tips.length > 0) {
     sections.push(
-      '## Examples',
+      '## Tips',
       '',
-      ...tutorial.examples.map(example => `- ${example}`),
+      ...tutorial.tips.map(tip => `- ${tip}`),
       ''
     );
   }

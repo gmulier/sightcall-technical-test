@@ -162,10 +162,10 @@ class Tutorial(models.Model):
         help_text="Array of step-by-step instructions as strings"
     )
     
-    # List of practical examples
-    examples = models.JSONField(
+    # List of practical tips
+    tips = models.JSONField(
         default=list,
-        help_text="Array of practical examples as strings"
+        help_text="Array of practical tips as strings"
     )
     
     # Summary paragraph wrapping up the tutorial

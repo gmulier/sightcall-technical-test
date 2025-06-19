@@ -222,7 +222,7 @@ Your response must be a single valid JSON object **with no markdown fences** and
         – **start** (float): clip start in seconds (phrase `offset_milliseconds` converted to seconds)  
         – **end**   (float): clip end in seconds (5 to 25 seconds maximum after start of related phrases)  
       *(omit this field if no visual action is relevant)*  
-- **examples** (array of strings): optional clarifications or tips.  
+- **tips** (array of strings): optional clarifications or tips.  
 - **summary** (string): 1–2 sentence wrap-up of achieved outcome.  
 - **duration_estimate** (string): estimated completion time (e.g. “5 minutes”).  
 - **tags** (array[string]): up to 5 relevant keywords.

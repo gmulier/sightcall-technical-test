@@ -15,7 +15,7 @@ def generate_tutorial_from_transcript(phrases: list) -> dict:
             - title: Tutorial title
             - introduction: Introduction paragraph  
             - steps: List of steps with text, index, timestamp, and optional video_clip
-            - examples: List of practical examples
+            - tips: List of practical tips
             - summary: Summary paragraph
             - duration_estimate: Estimated completion time
             - tags: List of relevant keywords

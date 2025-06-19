@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import { api } from '../../../utils/api';
-import { useData } from '../../../hooks/useData';
+import { useTutorials } from '../../../hooks/useTutorials';
 import { Tutorial } from '../../../types';
 import { TutorialsManager } from '../types';
 
 export const useTutorialsManager = (
   showToast?: (message: string, type: 'success' | 'error') => void
 ): TutorialsManager & { refetchTutorials: () => void } => {
-  const { tutorials, tutorialsLoading: loading, refetchTutorials } = useData();
+  const { tutorials, loading, refetchTutorials } = useTutorials();
   const [selected, setSelectedInternal] = useState<Tutorial | null>(null);
 
   const setSelected = useCallback((tutorial: Tutorial | null) => {
