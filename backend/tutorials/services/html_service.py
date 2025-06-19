@@ -196,7 +196,7 @@ class HtmlService:
     @staticmethod
     def _render_introduction(introduction: str) -> str:
         """Render the introduction section."""
-        return f'    <div class="introduction">{HtmlService._escape_html(introduction)}</div>\n    <h2>Steps</h2>'
+        return f'    <h2>Introduction</h2>\n    <div class="introduction">{HtmlService._escape_html(introduction)}</div>\n    <h2>Steps</h2>'
     
     @staticmethod
     def _render_steps(steps: List) -> str:
@@ -236,7 +236,7 @@ class HtmlService:
         local_path = f'clips/{filename}'
         
         return f"""        <div class="video-container">
-            <video controls preload="metadata" src="{local_path}">
+            <video controls preload="metadata" src="{local_path}#t=0.1" onloadedmetadata="this.currentTime=0.1">
                 Your browser does not support the video tag.
             </video>
             <div class="video-caption">

@@ -32,7 +32,8 @@ export const TutorialReader: React.FC<TutorialReaderProps> = ({ tutorial }) => {
         <MetaInfo label="Read time" value={tutorial.duration_estimate} />
       )}
 
-      {/* Introduction */}
+      {/* Introduction Section */}
+      <SectionTitle>Introduction</SectionTitle>
       <Block {...tutorialStyles.introduction}>
         {tutorial.introduction}
       </Block>

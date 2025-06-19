@@ -56,10 +56,11 @@ export const tutorialStyles = {
   },
   title: {
     ...typography.h1,
-    marginBottom: spacing.md,
+    marginBottom: spacing.xl,
   },
   section: {
     ...typography.h2,
+    marginTop: spacing.xxl,
     marginBottom: spacing.lg,
     borderBottom: `1px solid ${colors.border}`,
     paddingBottom: spacing.xs,
@@ -129,7 +130,8 @@ export const generateCSS = (): string => {
     h1 {
       font-size: ${typography.h1.fontSize};
       font-weight: ${typography.h1.fontWeight};
-      margin-bottom: ${spacing.md};
+      margin-top: ${spacing.sm};
+      margin-bottom: ${spacing.xl};
       color: ${typography.h1.color};
       line-height: ${typography.h1.lineHeight};
     }

@@ -17,11 +17,15 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
   const [editedTutorial, setEditedTutorial] = useState(tutorial);
   const [isExporting, setIsExporting] = useState(false);
 
+  // Sync editedTutorial when tutorial prop changes (after save/refetch)
+  // Only update if not currently editing to avoid overwriting user changes
   useEffect(() => {
     if (tutorial) {
-      setEditedTutorial(tutorial);
+      if (!isEditing) {
+        setEditedTutorial(tutorial);
+      }
     }
-  }, [tutorial]);
+  }, [tutorial, isEditing]);
 
   // Reset editing state when modal opens/closes
   useEffect(() => {

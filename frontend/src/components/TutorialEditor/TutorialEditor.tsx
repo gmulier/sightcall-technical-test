@@ -21,6 +21,12 @@ export const TutorialEditor: React.FC<TutorialEditorProps> = ({
         ...tutorial,
         tags: value.split(',').map(tag => tag.trim()).filter(tag => tag)
       });
+    } else if (field === 'tips') {
+      // Special handling for tips - convert line-separated string to array
+      onTutorialChange({
+        ...tutorial,
+        tips: value.split('\n').map(tip => tip.trim()).filter(tip => tip)
+      });
     } else {
       onTutorialChange({
         ...tutorial,
@@ -68,6 +74,15 @@ export const TutorialEditor: React.FC<TutorialEditorProps> = ({
       <StepsEditor
         steps={tutorial.steps}
         onStepsChange={handleStepsChange}
+      />
+
+      <FieldEditor
+        label="Tips (one per line)"
+        value={tutorial.tips?.join('\n') || ''}
+        onChange={handleFieldChange('tips')}
+        type="textarea"
+        rows={4}
+        placeholder="Enter tips, one per line..."
       />
 
       <FieldEditor
